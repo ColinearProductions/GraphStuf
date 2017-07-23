@@ -2,6 +2,9 @@ package com.colinear.graphstuff;
 
 import android.app.Application;
 
+import com.colinear.graphstuff.Dagger.ChartComponent;
+import com.colinear.graphstuff.Dagger.ChartModule;
+
 /**
  * Created by Colinear on 7/15/2017.
  */

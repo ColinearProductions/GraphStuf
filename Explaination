@@ -2,3 +2,73 @@
 
 
 1. Activity gets it's ViewModel through ViewModelProvider
+2. The activity should communicate with the view model directly, the view model should not do IO actions. because they would be ran on the UI thread.
+3. The view model will mostly act like the broker between the activity and the repository, but will also store the state of the activity.
+4. The Repo will be injected into the view model. The view model only knows the interface of the repository, but dagger will inject the implementation (good for testing)
+5. The database class (an abstract class that only has a getter for the dao)  will be injected in the repository , but they will only communicate through the dao interface.
+
+
+Dagger:
+
+
+Pieces needed to inject a class;
+
+
+*Component
+    An interface with a single method (inject(TheClassThatNeedsInjection obj))
+    It's annotated with:
+        @Singleton
+        @Component(modules = {ChartModule.class})
+        public interface ChartComponent {
+
+            void inject(ChartViewModel chartViewModel);
+
+        }
+
+
+    This will tell dagger where to get the dependencies needed to inject that class
+
+
+
+*Module
+    Holds a refference to the application that is injected through the constructor (from the App class) (optional, if you need to inject the app):
+
+    public ChartModule(Application application){
+            this.application = application;
+        }
+
+        @Provides
+        Context applicationContext(){
+            return application;
+        }
+
+
+    Annotated with @module.
+    It defines the way it provides dependencies (with @provides annotation) through methods that return the needed object. Here you initialise the objects, if those have their own dependenceis
+    dager will solve them as long as in the same module you also define a @provides for those, and so on.
+
+    You can also use the @singleton annotation, and dagger will handle all boilerplate that you would have been using to achieve that.
+
+
+App
+
+
+    public class MyApp extends Application{
+
+        ChartComponent chartComponent;
+
+        @Override
+        public void onCreate() {
+            super.onCreate();
+
+            chartComponent = DaggerChartComponent.builder()
+                    .chartModule(new ChartModule(this))
+                    .build();
+        }
+
+        public ChartComponent getChartComponent(){
+            return chartComponent;
+        }
+    }
+
+    App holds references to the coponents, they are obtained from the Dagger*componentName*.builder(), that object is generated only after you run build project from the project menu

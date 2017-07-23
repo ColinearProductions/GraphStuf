@@ -1,11 +1,11 @@
 package com.colinear.graphstuff;
 
-import android.app.Application;
 import android.arch.lifecycle.LifecycleActivity;
 import android.arch.lifecycle.ViewModelProviders;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+
+import com.colinear.graphstuff.DB.Entry;
 
 public class ChartActivity extends LifecycleActivity {
 
@@ -21,7 +21,6 @@ public class ChartActivity extends LifecycleActivity {
 
 
         chartViewModel = ViewModelProviders.of(this).get(ChartViewModel.class);
-
 
 
         Entry entry = new Entry("timestamp", "comment", 0);

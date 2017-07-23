@@ -1,4 +1,4 @@
-package com.colinear.graphstuff;
+package com.colinear.graphstuff.DB;
 
 import android.arch.lifecycle.LiveData;
 

@@ -1,8 +1,12 @@
-package com.colinear.graphstuff;
+package com.colinear.graphstuff.Dagger;
 
 import android.app.Application;
 import android.arch.persistence.room.Room;
 import android.content.Context;
+
+import com.colinear.graphstuff.DB.ChartDatabase;
+import com.colinear.graphstuff.DB.ChartRepository;
+import com.colinear.graphstuff.DB.ChartRepositoryImpl;
 
 import javax.inject.Singleton;
 
