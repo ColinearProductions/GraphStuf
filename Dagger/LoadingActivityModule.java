@@ -14,11 +14,11 @@ import dagger.Module;
 import dagger.Provides;
 
 @Module
-public class ChartModule {
+public class LoadingActivityModule {
 
     private Application application;
 
-    public ChartModule(Application application){
+    public LoadingActivityModule(Application application){
         this.application = application;
     }
 
@@ -39,7 +39,6 @@ public class ChartModule {
     @Singleton
     ChartDatabase providesChartDatabase(Context context){
         return Room.inMemoryDatabaseBuilder(context.getApplicationContext(), ChartDatabase.class).build();
-        //return Room.databaseBuilder(context.getApplicationContext(), ChartDatabase.class,"test").build();
     }
 
 }

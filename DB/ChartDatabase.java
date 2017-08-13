@@ -8,8 +8,11 @@ import android.arch.persistence.room.RoomDatabase;
  */
 
 
-@Database(entities = {Entry.class}, version = 1)
+@Database(entities = {EntryEntity.class, ChartEntity.class}, version = 2)
 public abstract class ChartDatabase  extends RoomDatabase{
 
     public abstract EntryDao entryDao();
+    public abstract ChartDao chartDao();
+
+
 }

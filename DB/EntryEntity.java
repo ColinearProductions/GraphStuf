@@ -1,27 +1,35 @@
 package com.colinear.graphstuff.DB;
 
+import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.PrimaryKey;
+
+import static android.arch.persistence.room.ForeignKey.CASCADE;
 
 /**
  * Created by Colinear on 7/15/2017.
  */
 
 
-@Entity(tableName = "entries")
-public class Entry {
+@Entity(tableName = "entries", foreignKeys = @ForeignKey(entity =  ChartEntity.class, parentColumns = "title", childColumns = "chartTitle", onUpdate = CASCADE))
+public class EntryEntity {
 
     @PrimaryKey(autoGenerate = true)
     int id;
-    String timestamp;
+    int timestamp; //todo right now it's just an int index, change later
     String comment;
     int value;
 
+    @ColumnInfo(name = "chartTitle")
+    String chartTitle;
 
-    public Entry(String timestamp, String comment, int value) {
+
+    public EntryEntity(int timestamp, String comment, int value, String chartTitle) {
         this.timestamp = timestamp;
         this.comment = comment;
         this.value = value;
+        this.chartTitle = chartTitle;
     }
 
 
@@ -33,11 +41,11 @@ public class Entry {
         this.id = id;
     }
 
-    public String getTimestamp() {
+    public int getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(int timestamp) {
         this.timestamp = timestamp;
     }
 
@@ -57,13 +65,22 @@ public class Entry {
         this.value = value;
     }
 
+    public String getChartTitle() {
+        return chartTitle;
+    }
+
+    public void setChartTitle(String chartTitle) {
+        this.chartTitle = chartTitle;
+    }
+
     @Override
     public String toString() {
-        return "Entry{" +
+        return "EntryEntity{" +
                 "id=" + id +
                 ", timestamp='" + timestamp + '\'' +
                 ", comment='" + comment + '\'' +
                 ", value=" + value +
+                ", title=" + chartTitle +
                 '}';
     }
 }

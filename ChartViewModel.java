@@ -6,21 +6,18 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.util.Log;
 
+import com.colinear.graphstuff.DB.ChartEntity;
 import com.colinear.graphstuff.DB.ChartRepository;
-import com.colinear.graphstuff.DB.Entry;
+import com.colinear.graphstuff.DB.EntryEntity;
 
 import java.util.List;
 
 import javax.inject.Inject;
 
-import io.reactivex.CompletableObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-/**
- * Created by Colinear on 7/15/2017.
- */
+
 
 public class ChartViewModel extends AndroidViewModel {
 
@@ -28,54 +25,37 @@ public class ChartViewModel extends AndroidViewModel {
     ChartRepository chartRepository;
 
 
-    private LiveData<List<Entry>> entries = new MutableLiveData<>();
+    private LiveData<List<EntryEntity>> entries = new MutableLiveData<>();
 
-
-    int chartId;
 
     public ChartViewModel(Application application) {
         super(application);
-        ((MyApp)application).getChartComponent().inject(this);
+        ((MyApp) application).getChartComponent().inject(this);
 
         entries = chartRepository.getEntries();
     }
 
-    public void setChartId(int chartId) {
-        this.chartId = chartId;
-    }
 
+    public void addEntry(EntryEntity entryEntity) {
 
-    public void addEntry(Entry entry) {
-
-
-        chartRepository.addEntry(entry).observeOn(AndroidSchedulers.mainThread())
+        chartRepository.addEntry(entryEntity).observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
-                .subscribe(new CompletableObserver() {
-
-                    //completable only receives success or error response
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        Log.e("LOG", "On Complete for addEntry");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e("Error", e.toString());
-
-                    }
-                });
+                .subscribe(entity -> Log.i("ChartViewModel", "Entry created : " + entryEntity.toString())
+                );
     }
 
 
-    public LiveData<List<Entry>> getEntries(){
+    public void addChart(ChartEntity chartEntity) {
+        chartRepository.createChart(chartEntity).observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(result -> Log.i("ChartViewModel", "Result: " + result));
+    }
+
+
+
+    public LiveData<List<EntryEntity>> getEntries() {
         return entries;
     }
-
 
 
 }

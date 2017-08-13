@@ -5,17 +5,20 @@ import android.arch.lifecycle.LiveData;
 import java.util.List;
 
 import io.reactivex.Completable;
-
-/**
- * Created by Colinear on 7/15/2017.
- */
+import io.reactivex.Flowable;
+import io.reactivex.Single;
 
 public interface ChartRepository {
 
-    Completable addEntry(Entry entry);
+    Single<Boolean> addEntry(EntryEntity entryEntity);
+    Single<Boolean> addEntries(List<EntryEntity> entryEntities);
 
-    LiveData<List<Entry>> getEntries();
+    Single<Boolean> createChart(ChartEntity chartEntity);
+    Single<List<ChartEntity>> getCharts();
 
-    Completable deleteEntry(Entry entry);
+
+    LiveData<List<EntryEntity>> getEntries();
+    LiveData<List<EntryEntity>> getEntriesByChart(String chartTitle);
+
 
 }

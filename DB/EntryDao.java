@@ -18,15 +18,28 @@ public interface EntryDao {
 
 
     @Query("SELECT * FROM entries")
-    LiveData<List<Entry>> getEntries();
+    LiveData<List<EntryEntity>> getEntries();
+
+
+    @Query("SELECT * FROM entries where chartTitle = :chartTitle")
+    LiveData<List<EntryEntity>> getEntriesByChart(String chartTitle);
+
+
+    @Query("SELECT * FROM entries WHERE id = :entryId")
+    EntryEntity getEntryById(int entryId);
+
 
 
     @Insert
-    void addEntry(Entry entry);
+    void addEntry(EntryEntity entryEntity);
+
+
+    @Insert
+    void addEntries(List<EntryEntity> entries);
 
     @Delete
-    void deleteEntry(Entry entry);
+    void deleteEntry(EntryEntity entryEntity);
 
     @Update(onConflict = REPLACE)
-    void updateEntry(Entry e);
+    void updateEntry(EntryEntity e);
 }
