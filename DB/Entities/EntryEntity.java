@@ -1,4 +1,4 @@
-package com.colinear.graphstuff.DB;
+package com.colinear.graphstuff.DB.Entities;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;

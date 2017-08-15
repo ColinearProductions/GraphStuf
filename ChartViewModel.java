@@ -6,9 +6,9 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.util.Log;
 
-import com.colinear.graphstuff.DB.ChartEntity;
+import com.colinear.graphstuff.DB.Entities.ChartEntity;
 import com.colinear.graphstuff.DB.ChartRepository;
-import com.colinear.graphstuff.DB.EntryEntity;
+import com.colinear.graphstuff.DB.Entities.EntryEntity;
 
 import java.util.List;
 

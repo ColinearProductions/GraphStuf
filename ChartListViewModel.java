@@ -3,19 +3,17 @@ package com.colinear.graphstuff;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
 import android.util.Log;
 
 
-import com.colinear.graphstuff.DB.ChartEntity;
+import com.colinear.graphstuff.DB.Entities.ChartEntity;
 import com.colinear.graphstuff.DB.ChartRepository;
-import com.colinear.graphstuff.DB.EntryEntity;
+import com.colinear.graphstuff.DB.Entities.EntryEntity;
 
 import java.util.List;
 
 import javax.inject.Inject;
 
-import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -50,8 +48,15 @@ public class ChartListViewModel extends AndroidViewModel {
 
 
     public Single<List<ChartEntity>> getCharts(){
+        Log.i("ChartListViewModel","Getting charts");
         return chartRepository.getCharts();
     }
+
+    public LiveData<List<ChartEntity>> getChartsLiveData(){
+        return chartRepository.getChartsLiveData();
+    }
+
+
 
     public LiveData<List<EntryEntity>> getEntriesByChart(String chartTitle){
         return chartRepository.getEntriesByChart(chartTitle);

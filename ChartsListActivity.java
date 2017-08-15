@@ -1,5 +1,10 @@
 package com.colinear.graphstuff;
 
+
+
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.arch.lifecycle.LifecycleActivity;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
@@ -8,15 +13,12 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
 
-import com.colinear.graphstuff.DB.ChartEntity;
-import com.colinear.graphstuff.DB.EntryEntity;
+import com.colinear.graphstuff.DB.Entities.ChartEntity;
+import com.colinear.graphstuff.DB.Entities.EntryEntity;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 
 public class ChartsListActivity extends LifecycleActivity  implements ChartListAdapter.ChartClickListener {
 
@@ -38,6 +40,23 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
         Log.i("ChartListActivity", "Started");
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         chartListViewModel = ViewModelProviders.of(this).get(ChartListViewModel.class);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -49,41 +68,44 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
 
 
         findViewById(R.id.button).setOnClickListener(v->{
+            Log.i("FAB","in activity");
             addChart();
         });
 
 
+        chartListViewModel.getChartsLiveData().observe(this,entries -> onChartsLoaded(entries));
 
 
-
-
-
-
-
-
-
-
-    }
-
-
-
-    public void reloadCharts(){
-        chartListViewModel.getCharts().observeOn(AndroidSchedulers.mainThread())
+       /* chartListViewModel.getCharts().observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
-                .subscribe(this::onChartsLoaded);
+                .subscribe(this::onChartsLoaded);   */
+
     }
+
 
     public void addChart(){
-        idx++;
-        String chartTitle = "Chart " + idx;
-        chartListViewModel.addChart(new ChartEntity(chartTitle, "descr", "color", 1));
-        reloadCharts();
+
+        String FRAGMENT_NAME ="CreateChartFragment";
+
+        Fragment createChartFragment =  new CreateChartFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.setCustomAnimations(R.anim.fadein,
+                R.anim.fadeout, R.anim.fadein, R.anim.fadeout);
+        fragmentTransaction.add(R.id.outer_layout, createChartFragment,FRAGMENT_NAME);
+        fragmentTransaction.addToBackStack(FRAGMENT_NAME);
+
+        fragmentTransaction.commit();
+
+
+
 
     }
 
 
     public void onChartsLoaded(List<ChartEntity> chartEntities){
-
+        Log.i("OnChartsLoaded","Charts Loaded");
         mAdapter.onNewData(chartEntities);
 
         for(ChartEntity chart : chartEntities){

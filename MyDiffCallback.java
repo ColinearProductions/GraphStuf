@@ -3,7 +3,7 @@ package com.colinear.graphstuff;
 import android.support.annotation.Nullable;
 import android.support.v7.util.DiffUtil;
 
-import com.colinear.graphstuff.DB.ChartEntity;
+import com.colinear.graphstuff.DB.Entities.ChartEntity;
 
 import java.util.List;
 

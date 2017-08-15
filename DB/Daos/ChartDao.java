@@ -1,16 +1,14 @@
-package com.colinear.graphstuff.DB;
+package com.colinear.graphstuff.DB.Daos;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
-import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
-import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
-import java.util.List;
+import com.colinear.graphstuff.DB.Entities.ChartEntity;
 
-import io.reactivex.Flowable;
+import java.util.List;
 
 import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 
@@ -22,6 +20,9 @@ public interface ChartDao {
 
     @Query("SELECT * FROM charts")
     List<ChartEntity> getCharts();
+
+    @Query("SELECT * FROM charts")
+    LiveData<List<ChartEntity>> getChartsLiveData();
 
 
 

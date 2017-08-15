@@ -1,4 +1,4 @@
-package com.colinear.graphstuff.DB;
+package com.colinear.graphstuff.DB.Daos;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
@@ -6,6 +6,8 @@ import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
+
+import com.colinear.graphstuff.DB.Entities.EntryEntity;
 
 import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 

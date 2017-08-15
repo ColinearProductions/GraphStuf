@@ -3,28 +3,23 @@ package com.colinear.graphstuff;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.ComposeShader;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
-import android.graphics.drawable.PaintDrawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.RectShape;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.colinear.graphstuff.DB.ChartEntity;
-import com.colinear.graphstuff.DB.EntryEntity;
+import com.colinear.graphstuff.DB.Entities.ChartEntity;
+import com.colinear.graphstuff.DB.Entities.EntryEntity;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
@@ -71,8 +66,12 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
 
 
 
-        holder.addButton.setOnClickListener(v -> {
+        holder.title.setOnClickListener(v -> {
             chartClickListener.onPlusClicked(charts.get(position).getTitle(), charts.get(position).getEntries().size() + 1);
+        });
+
+        holder.layout.setOnClickListener(v -> {
+            Log.i("LayoutClicked","LAYOUT CLICKED");
         });
 
         List<EntryEntity> entries = charts.get(position).getEntries();
@@ -93,7 +92,7 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
         LineDataSet dataSet = new LineDataSet(mpEntries, "Label");
         dataSet.setDrawFilled(true);
 
-        Drawable drawable = ContextCompat.getDrawable(ctx, R.drawable.ping_blue_gradient);
+        Drawable drawable = ContextCompat.getDrawable(ctx, R.drawable.pink_blue_gradient);
         dataSet.setFillDrawable(drawable);
 
 
@@ -164,16 +163,19 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
     static class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView title;
-        Button addButton;
-        LineChart chartView;
+        public LineChart chartView;
+        public LinearLayout layout;
+
 
 
         ViewHolder(View v) {
             super(v);
             title = (TextView) v.findViewById(R.id.chart_title);
-            addButton = (Button) v.findViewById(R.id.chart_log_button);
             chartView = (LineChart) v.findViewById(R.id.chart_linechart);
+            layout = (LinearLayout) v.findViewById(R.id.chart_list_element_layout);
         }
+
+
 
 
     }

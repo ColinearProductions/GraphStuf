@@ -1,15 +1,15 @@
 package com.colinear.graphstuff.DB;
 
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
 import android.util.Log;
+
+import com.colinear.graphstuff.DB.Entities.ChartEntity;
+import com.colinear.graphstuff.DB.Entities.EntryEntity;
 
 import java.util.List;
 
 import javax.inject.Inject;
 
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
 import io.reactivex.Single;
 
 
@@ -77,6 +77,14 @@ public class ChartRepositoryImpl implements ChartRepository {
         return Single.fromCallable(()->{
             return chartDatabase.chartDao().getCharts();
         });
+
+    }
+
+
+    @Override
+    public LiveData<List<ChartEntity>> getChartsLiveData() {
+
+            return chartDatabase.chartDao().getChartsLiveData();
 
     }
 

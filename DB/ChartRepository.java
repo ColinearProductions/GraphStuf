@@ -2,10 +2,11 @@ package com.colinear.graphstuff.DB;
 
 import android.arch.lifecycle.LiveData;
 
+import com.colinear.graphstuff.DB.Entities.ChartEntity;
+import com.colinear.graphstuff.DB.Entities.EntryEntity;
+
 import java.util.List;
 
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
 import io.reactivex.Single;
 
 public interface ChartRepository {
@@ -15,6 +16,8 @@ public interface ChartRepository {
 
     Single<Boolean> createChart(ChartEntity chartEntity);
     Single<List<ChartEntity>> getCharts();
+
+    LiveData<List<ChartEntity>> getChartsLiveData();
 
 
     LiveData<List<EntryEntity>> getEntries();
