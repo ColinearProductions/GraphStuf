@@ -23,9 +23,11 @@ import com.colinear.graphstuff.DB.Entities.ChartEntity;
 import com.colinear.graphstuff.DB.Entities.EntryEntity;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.LegendEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,12 +40,22 @@ public class ChartDetailFragment extends LifecycleFragment {
 
 
     FloatingActionButton fab;
-
     ChartListViewModel chartListViewModel;
 
     ChartEntity chartEntity;
 
+
     LineChart lineChart;
+
+    String chartBackgroundColor="#30343a";
+    String chartLineColor="#938DD6";
+    String chartValueTextColor="#938DD6";
+
+
+
+
+
+
 
     public ChartDetailFragment() {
         // Required empty public constructor
@@ -87,6 +99,41 @@ public class ChartDetailFragment extends LifecycleFragment {
     private void redrawChartView() {
         Log.i("chart", chartEntity.toString());
 
+
+        if (chartEntity.getEntries().size() <= 0)
+            return;
+
+
+
+        ArrayList<Entry> mpEntries = new ArrayList<>();
+        for (EntryEntity e : chartEntity.getEntries())
+            mpEntries.add(new Entry(e.getTimestamp(), e.getValue()));
+
+
+
+        ChartStyle chartStyle = new ChartStyle();
+
+
+
+
+        LineDataSet dataSet = new LineDataSet(mpEntries, "Label"); //apply styling to it
+        chartStyle.applyStyle(dataSet);
+        LineData lineData = new LineData(dataSet);
+        lineChart.setData(lineData); // apply styling to line chart
+        chartStyle.applyStyle(lineChart);
+
+        lineChart.invalidate();
+
+
+
+
+
+    }
+
+
+    private void redrawChartView2() {
+        Log.i("chart", chartEntity.toString());
+
         if (chartEntity.getEntries().size() <= 0)
             return;
 
@@ -94,20 +141,65 @@ public class ChartDetailFragment extends LifecycleFragment {
         List<EntryEntity> entries = chartEntity.getEntries();
         Log.i("chart",entries.toString());
         ArrayList<Entry> mpEntries = new ArrayList<>();
-
         for (EntryEntity e : entries)
             mpEntries.add(new Entry(e.getTimestamp(), e.getValue()));
 
+
+
+
+
         LineDataSet dataSet = new LineDataSet(mpEntries, "Label");
-        dataSet.setDrawFilled(true);
-
-        Drawable drawable = ContextCompat.getDrawable(getActivity(), R.drawable.pink_blue_gradient);
-        dataSet.setFillDrawable(drawable);
 
 
-        dataSet.setColor(Color.RED);
-        dataSet.setLineWidth(2);
+
+
+
+        dataSet.setColor(Color.parseColor(chartLineColor));
+        dataSet.setLineWidth(3);
         dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        dataSet.setCircleColor(Color.parseColor(chartLineColor));
+        dataSet.setCircleColorHole(Color.parseColor(chartBackgroundColor));
+        dataSet.setCircleHoleRadius(4f);
+        dataSet.setCircleRadius(7f);
+
+        dataSet.setValueTextColor(Color.parseColor(chartLineColor));
+
+        dataSet.setHighLightColor(Color.CYAN); // highlight lines color
+
+
+        lineChart.getAxisLeft().setTextColor(Color.BLUE); // left y-axis
+        lineChart.getAxisRight().setTextColor(Color.BLUE); // left y-axis
+        lineChart.getXAxis().setTextColor(Color.BLUE);
+
+
+
+
+        lineChart.getLegend().setTextColor(Color.GREEN);
+
+        int[] colors = new int[1];
+        colors[0] = Color.RED;
+
+        String[] strings =  new String[1];
+        strings[0] = "test custom label";
+
+        lineChart.getLegend().setExtra(colors, strings);
+
+
+
+
+
+        lineChart.getDescription().setTextColor(Color.CYAN);
+
+
+
+
+
+        lineChart.getAxisLeft().setAxisLineColor(Color.GREEN);
+        lineChart.getAxisRight().setAxisLineColor(Color.BLUE);
+        lineChart.getXAxis().setAxisLineColor(Color.BLUE);
+        lineChart.getAxisLeft().setGridColor(Color.YELLOW);
+        lineChart.getAxisRight().setGridColor(Color.CYAN);
+        lineChart.getXAxis().setGridColor(Color.MAGENTA);
 
 
 
@@ -116,30 +208,12 @@ public class ChartDetailFragment extends LifecycleFragment {
         lineChart.setData(lineData);
 
 
-        lineChart.setBackgroundColor(Color.parseColor("#30343a"));
-
-
-
-        Paint paint = lineChart.getRenderer().getPaintRender();
-        int height = lineChart.getHeight();
-        int width = lineChart.getWidth();
-
-        LinearGradient linGrad = new LinearGradient(0, 0, 0, height,
-                Color.parseColor("#f700ff"),
-                Color.parseColor("#0066ff"),
-                Shader.TileMode.REPEAT);
-
-        paint.setShader(linGrad);
-
-
-        LayerDrawable drawablez = (LayerDrawable) ContextCompat.getDrawable(getActivity(), R.drawable.t);
-
-
-        dataSet.setFillDrawable(drawablez);
+        lineChart.setBackgroundColor(Color.parseColor(chartBackgroundColor));
 
 
         lineChart.animateY(1000, Easing.EasingOption.Linear);
         lineChart.invalidate();
+
 
 
     }
