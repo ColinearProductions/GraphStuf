@@ -2,7 +2,6 @@ package com.colinear.graphstuff.Dagger;
 
 
 import com.colinear.graphstuff.ChartListViewModel;
-import com.colinear.graphstuff.ChartViewModel;
 
 import javax.inject.Singleton;
 

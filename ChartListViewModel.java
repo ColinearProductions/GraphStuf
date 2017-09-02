@@ -9,6 +9,7 @@ import android.util.Log;
 import com.colinear.graphstuff.DB.Entities.ChartEntity;
 import com.colinear.graphstuff.DB.ChartRepository;
 import com.colinear.graphstuff.DB.Entities.EntryEntity;
+import com.github.mikephil.charting.charts.Chart;
 
 import java.util.List;
 
@@ -22,6 +23,8 @@ public class ChartListViewModel extends AndroidViewModel {
 
     @Inject
     ChartRepository chartRepository;
+
+    String currentChartTitle = null;
 
 
 
@@ -56,12 +59,27 @@ public class ChartListViewModel extends AndroidViewModel {
         return chartRepository.getChartsLiveData();
     }
 
-
-
     public LiveData<List<EntryEntity>> getEntriesByChart(String chartTitle){
         return chartRepository.getEntriesByChart(chartTitle);
     }
 
+    public LiveData<ChartEntity> getChartByTitle(String title){
+        return chartRepository.getChartLiveData(title);
+    }
+
+
+    public void setCurrentChart(String chartTitle){
+        Log.i("chart", "set current chart: " +  chartTitle);
+        this.currentChartTitle = chartTitle;
+    }
+
+    public String getCurrentChartTitle(){
+        return this.currentChartTitle;
+    }
+
+    public void clearCurrentChart(){
+        this.currentChartTitle = null;
+    }
 
 
 

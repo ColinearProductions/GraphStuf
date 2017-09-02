@@ -71,6 +71,11 @@ public class ChartRepositoryImpl implements ChartRepository {
         return chartDatabase.entryDao().getEntriesByChart(chartTitle);
     }
 
+    @Override
+    public LiveData<ChartEntity> getChartLiveData(String title) {
+        return chartDatabase.chartDao().getChartLiveData(title);
+    }
+
 
     @Override
     public Single<List<ChartEntity>> getCharts() {

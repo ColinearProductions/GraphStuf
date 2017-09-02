@@ -130,12 +130,32 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
     }
 
     @Override
-    public void onPlusClicked(String chartTitle, int highestEntry) {
+    public void onAddEntryClicked(String chartTitle, int highestEntry) {
         Log.i("Chart List activity","On chart plus clicked " + chartTitle);
         ArrayList<EntryEntity> entries = new ArrayList<>();
-        for(int i=0;i<1;i++){
+
             entries.add(new EntryEntity(highestEntry,"comment",r.nextInt(30),chartTitle));
-        }
+
         chartListViewModel.addEntries(entries);
+    }
+
+    @Override
+    public void onChartClicked(String chartTitle) {
+        Log.i("Chart callback","Chart clicked "+ chartTitle);
+
+        chartListViewModel.setCurrentChart(chartTitle);
+
+        String FRAGMENT_NAME ="ChartDetailFragment";
+
+        Fragment chartDetailFragment =  new ChartDetailFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.setCustomAnimations(R.anim.fadein,
+                R.anim.fadeout, R.anim.fadein, R.anim.fadeout);
+        fragmentTransaction.add(R.id.outer_layout, chartDetailFragment,FRAGMENT_NAME);
+        fragmentTransaction.addToBackStack(FRAGMENT_NAME);
+
+        fragmentTransaction.commit();
     }
 }

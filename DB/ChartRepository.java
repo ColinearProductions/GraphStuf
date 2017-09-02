@@ -24,4 +24,6 @@ public interface ChartRepository {
     LiveData<List<EntryEntity>> getEntriesByChart(String chartTitle);
 
 
+    LiveData<ChartEntity> getChartLiveData(String title);
+
 }

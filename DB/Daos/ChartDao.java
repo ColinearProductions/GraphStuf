@@ -24,6 +24,10 @@ public interface ChartDao {
     @Query("SELECT * FROM charts")
     LiveData<List<ChartEntity>> getChartsLiveData();
 
+    @Query("SELECT * FROM charts where title=:title")
+    LiveData<ChartEntity> getChartLiveData(String title);
+
+
 
 
     @Insert

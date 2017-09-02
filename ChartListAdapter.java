@@ -11,11 +11,10 @@ import android.graphics.drawable.LayerDrawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.colinear.graphstuff.DB.Entities.ChartEntity;
@@ -66,15 +65,22 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
 
 
 
-        holder.title.setOnClickListener(v -> {
-            chartClickListener.onPlusClicked(charts.get(position).getTitle(), charts.get(position).getEntries().size() + 1);
+        holder.addEntryButton.setOnClickListener(v -> {
+            chartClickListener.onAddEntryClicked(charts.get(position).getTitle(), charts.get(position).getEntries().size() + 1);
         });
 
-        holder.layout.setOnClickListener(v -> {
-            Log.i("LayoutClicked","LAYOUT CLICKED");
+        holder.title.setOnClickListener(v -> {
+            chartClickListener.onChartClicked(charts.get(position).getTitle());
+        });
+
+        holder.chartContainerLayout.setOnClickListener(v -> {
+            chartClickListener.onChartClicked(charts.get(position).getTitle());
         });
 
         List<EntryEntity> entries = charts.get(position).getEntries();
+
+
+
 
         if (entries.size() < 1)
             return;
@@ -84,16 +90,12 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
         for (EntryEntity e : entries)
             mpEntries.add(new Entry(e.getTimestamp(), e.getValue()));
 
-
-
-
-
-
         LineDataSet dataSet = new LineDataSet(mpEntries, "Label");
         dataSet.setDrawFilled(true);
 
         Drawable drawable = ContextCompat.getDrawable(ctx, R.drawable.pink_blue_gradient);
         dataSet.setFillDrawable(drawable);
+
 
 
 
@@ -109,6 +111,7 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
         LineData lineData = new LineData(dataSet);
 
         lineChart.setData(lineData);
+        lineChart.setViewPortOffsets(4f, 4f, 4f, 4f);
 
         lineChart.setBackgroundColor(Color.parseColor(backgroundColor));
         lineChart.setDrawBorders(false);
@@ -163,16 +166,18 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
     static class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView title;
-        public LineChart chartView;
-        public LinearLayout layout;
+        LineChart chartView;
+        FrameLayout chartContainerLayout;
+        TextView addEntryButton;
 
 
 
         ViewHolder(View v) {
             super(v);
             title = (TextView) v.findViewById(R.id.chart_title);
-            chartView = (LineChart) v.findViewById(R.id.chart_linechart);
-            layout = (LinearLayout) v.findViewById(R.id.chart_list_element_layout);
+            chartView = (LineChart) v.findViewById(R.id.full_chart);
+            chartContainerLayout = (FrameLayout) v.findViewById(R.id.chart_container_layout);
+            addEntryButton = (TextView) v.findViewById(R.id.add_entry_button);
         }
 
 
@@ -191,6 +196,7 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
     }
 
     interface ChartClickListener {
-        void onPlusClicked(String chartTitle, int highestEntry);
+        void onAddEntryClicked(String chartTitle, int highestEntry);
+        void onChartClicked(String chartTitle);
     }
 }
