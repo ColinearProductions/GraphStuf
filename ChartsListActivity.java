@@ -30,7 +30,8 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
     Random r = new Random();
     public int idx = 0;
 
-
+//todo App name : Provis
+    // progress visualizer
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +81,8 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
                 .subscribeOn(Schedulers.io())
                 .subscribe(this::onChartsLoaded);   */
 
+
+
     }
 
 
@@ -122,6 +125,8 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
 
                         mAdapter.notifyDataSetChanged();
                     }
+
+
             });
 
 
@@ -157,5 +162,33 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
         fragmentTransaction.addToBackStack(FRAGMENT_NAME);
 
         fragmentTransaction.commit();
+    }
+
+
+    public void generateDummyData(){
+        double[] data = {
+                109.0,108.5,107.0,106.0,105.5,105.0,104.5,104.5,104.5,104.0,103.5,103.0,102.5,102.5,
+                102.8,102.4,102.1,102.3,102.5,102.2,101.6,101.4,102.4,101.8,101.4,102.8,103.4,102.7,
+                103.0,102.5,101.0,101.3,100.8,100.3,101.7,100.7,100.3,99.9,100.6,100.1,101.7,100.7,
+                100.2,99.5,98.9,99.5,99.2,98.5,99.5,98.9,99.5,99.2,99.0,99.2,98.5,99.5,98.9,99.5,
+                99.2,99.2,99.2,99.2,98.8,98.4,97.9,98.1,99.3,99.5,101.0,100.0,99.5,99.0,98.5,99.3,
+                98.7,98.5,98.5,97.8,97.5,97.2,97.2,98.0,98.5,98.2,98.4,97.1,98.0,97.5,97.2,97.2,
+                98.0,98.5,98.2,98.4,98.8,98.3,97.8,97.0,97.8,97.2,96.0,95.9,96.3,95.6,96.3,96.9,
+                96.6,95.3,95.2,96.0,97.0,97.0,96.3,97.0,96.2,96.8,97.0,97.3,97.1,97.8,96.5,95.2,
+                96.0,96.1,95.9,96.0,96.5,97.0,96.5,97.1,97.0,96.3,95.7,95.4,95.3,95.2,95.0,94.7,
+                95.0,95.2,95.4,95.0,95.6,96.0,96.1,96.2,96.8,95.9,96.2,96.5,96.7,97.0,96.2,96.5,
+                96.0,96.8,95.9,96.2,96.5,96.7,97.0,96.2,96.5,96.0,96.5,97.0,97.1,97.4,97.2,98.0,
+                98.1,97.2,98.2,98.1,98.3,98.0,98.6,98.2,98.3,98.1,98.6,98.6,98.2,98.7,98.6,98.9,
+                98.8,98.1,98.0,98.0,96.7,97.0,97.2,97.9,97.3,97.2,97.4};
+
+        String chartTitle = "Demo";
+        chartListViewModel.addChart(new ChartEntity(chartTitle, "descr", "color", 1));
+        ArrayList<EntryEntity> entries = new ArrayList<>();
+        for(int i=0;i<data.length;i++){
+            entries.add(new EntryEntity(i, "comment", data[i], chartTitle));
+        }
+
+        chartListViewModel.addEntries(entries);
+
     }
 }

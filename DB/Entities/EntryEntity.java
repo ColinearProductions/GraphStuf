@@ -19,13 +19,13 @@ public class EntryEntity {
     int id;
     int timestamp; //todo right now it's just an int index, change later
     String comment;
-    int value;
+    double value;
 
     @ColumnInfo(name = "chartTitle")
     String chartTitle;
 
 
-    public EntryEntity(int timestamp, String comment, int value, String chartTitle) {
+    public EntryEntity(int timestamp, String comment, double value, String chartTitle) {
         this.timestamp = timestamp;
         this.comment = comment;
         this.value = value;
@@ -57,11 +57,11 @@ public class EntryEntity {
         this.comment = comment;
     }
 
-    public int getValue() {
+    public double getValue() {
         return value;
     }
 
-    public void setValue(int value) {
+    public void setValue(double value) {
         this.value = value;
     }
 

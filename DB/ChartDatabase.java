@@ -13,7 +13,7 @@ import com.colinear.graphstuff.DB.Entities.EntryEntity;
  */
 
 
-@Database(entities = {EntryEntity.class, ChartEntity.class}, version = 2)
+@Database(entities = {EntryEntity.class, ChartEntity.class}, version = 6)
 public abstract class ChartDatabase  extends RoomDatabase{
 
     public abstract EntryDao entryDao();

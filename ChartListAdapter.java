@@ -32,12 +32,7 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
 
     List<ChartEntity> charts = new ArrayList<>();
 
-    String labelTextColor = "#ffffff";
-    String cellColor = "#30b3ff";
-    String graphLineColor = cellColor;
-    String gridColor = "#393d44";
-    String valueTextColor = "#ffffff";
-    String backgroundColor = "#30343a";
+
 
     ChartClickListener chartClickListener;
     ChartListViewModel chartListViewModel;
@@ -88,66 +83,19 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
         ArrayList<Entry> mpEntries = new ArrayList<>();
 
         for (EntryEntity e : entries)
-            mpEntries.add(new Entry(e.getTimestamp(), e.getValue()));
+            mpEntries.add(new Entry(e.getTimestamp(), (float)e.getValue()));
 
+
+        ChartStyle chartStyle = ChartStyle.fromJson("chartListStyle.json", ctx);
         LineDataSet dataSet = new LineDataSet(mpEntries, "Label");
-        dataSet.setDrawFilled(true);
-
-        Drawable drawable = ContextCompat.getDrawable(ctx, R.drawable.pink_blue_gradient);
-        dataSet.setFillDrawable(drawable);
-
-
-
-
-
-
-        dataSet.setColor(Color.parseColor(graphLineColor));
-        dataSet.setLineWidth(2);
-        dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-        dataSet.setDrawCircles(false);
-        dataSet.setDrawValues(false);
-
+        chartStyle.applyStyle(dataSet);
         LineChart lineChart = holder.chartView;
         LineData lineData = new LineData(dataSet);
-
         lineChart.setData(lineData);
-        lineChart.setViewPortOffsets(4f, 4f, 4f, 4f);
+        chartStyle.applyStyle(lineChart);
 
-        lineChart.setBackgroundColor(Color.parseColor(backgroundColor));
-        lineChart.setDrawBorders(false);
-        lineChart.getLegend().setEnabled(false);
-        lineChart.getDescription().setEnabled(false);
+
         lineChart.setTouchEnabled(false);
-        lineChart.getXAxis().setEnabled(false);
-        lineChart.getAxisRight().setEnabled(false);
-        lineChart.getAxisLeft().setEnabled(false);
-
-
-
-
-        Paint paint = lineChart.getRenderer().getPaintRender();
-        int height = lineChart.getHeight();
-        int width = lineChart.getWidth();
-
-        LinearGradient linGrad = new LinearGradient(0, 0, 0, height,
-                Color.parseColor("#f700ff"),
-                Color.parseColor("#0066ff"),
-                Shader.TileMode.REPEAT);
-
-        paint.setShader(linGrad);
-
-
-
-
-
-       LayerDrawable drawablez =  (LayerDrawable) ContextCompat.getDrawable(ctx, R.drawable.t);
-
-
-
-
-        dataSet.setFillDrawable(drawablez);
-
-
 
 
         lineChart.animateY(1000, Easing.EasingOption.Linear);

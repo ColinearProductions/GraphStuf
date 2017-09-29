@@ -1,11 +1,21 @@
 package com.colinear.graphstuff;
 
+import android.content.Context;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.Shader;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
+import android.util.Log;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.google.gson.Gson;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class ChartStyle {
     private String chartBackground = "#000000";
@@ -45,11 +55,12 @@ public class ChartStyle {
     private float rightAxisFontSize = 12f;
     private float rightAxisLineWidth = 1f;
 
-    private boolean topAxisLineEnabled = true;
-    private String topAxisLineColor = "#FFFFFF";
-    private String topAxisTextColor = "#FFFFFF";
-    private float topAxisFontSize = 12f;
-    private float topAxisLineWidth = 1f;
+    private boolean xAxisLineEnabled = true;
+    private String xAxisLineColor = "#FFFFFF";
+    private String xAxisTextColor = "#FFFFFF";
+    private float xAxisFontSize = 12f;
+    private float xAxisLineWidth = 1f;
+    private String xAxisPosition = "both";
 
 
     private boolean drawHorizontalGridLines = true;
@@ -71,14 +82,49 @@ public class ChartStyle {
     private String legendTextColor = "#FFFFFF";
     private float legendFontSize = 12f;
 
-    //todo animation
+    private boolean overrideOffset = false;
+    private float offsetLeft = 0;
+    private float offsetRight = 0;
+    private float offsetTop = 0;
+    private float offsetBottom = 0;
 
+
+    private boolean fill = true;
+    private String fillColor = "#FFFFFF";
+    private boolean gradientFill = true;
+    private ChartGradient[] gradients;
+
+
+
+
+    //todo animation
+    // todo fill
 
     private transient Gson gson = new Gson();
 
     public String toJson(){
         return gson.toJson(this);
     }
+
+    public static ChartStyle fromJson(String pathToJsonFile, Context ctx){
+        String json = null;
+        try {
+            InputStream is = ctx.getAssets().open(pathToJsonFile);
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        return new Gson().fromJson(json, ChartStyle.class);
+
+    }
+
+
+
 
 
     public LineDataSet applyStyle(LineDataSet lineDataSet){
@@ -112,12 +158,31 @@ public class ChartStyle {
         lineDataSet.setHighLightColor(Color.parseColor(highlightLineColor));
         lineDataSet.setHighlightLineWidth(highlightLineWidth);
 
+
+        lineDataSet.setDrawFilled(fill);
+
+
+        lineDataSet.setFillColor(Color.parseColor(fillColor));
+
+        if(gradientFill){
+            GradientDrawable[] layers = new GradientDrawable[gradients.length];
+            Log.i("JSON","There are " + layers.length + " layers");
+            for(int i=0; i <gradients.length;i++)
+                layers[i] = gradients[i].generateGradient();
+            LayerDrawable layerDrawable = new LayerDrawable(layers);
+            lineDataSet.setFillDrawable(layerDrawable);
+        }
         return lineDataSet;
+
+
     }
 
     public LineChart applyStyle(LineChart lineChart){
 
         lineChart.setBackgroundColor(Color.parseColor(chartBackground));
+
+        if(overrideOffset)
+            lineChart.setViewPortOffsets(offsetLeft, offsetTop, offsetRight, offsetBottom);
 
 
         // Left axis labels
@@ -133,14 +198,32 @@ public class ChartStyle {
         lineChart.getAxisRight().setAxisLineColor(Color.parseColor(rightAxisLineColor));
         lineChart.getAxisRight().setTextSize(rightAxisFontSize);
         lineChart.getAxisRight().setAxisLineWidth(rightAxisLineWidth);
+        switch (xAxisPosition){
+            case "top":
+                lineChart.getXAxis().setPosition(XAxis.XAxisPosition.TOP);
+                break;
+            case "bottom":
+                lineChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+                break;
+            case "both":
+                lineChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTH_SIDED);
+                break;
+            case "top_inside":
+                lineChart.getXAxis().setPosition(XAxis.XAxisPosition.TOP_INSIDE);
+                break;
+            case "bottom_inside":
+                lineChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM_INSIDE);
+                break;
+        }
+
 
 
         // Top axis labels
-        lineChart.getXAxis().setEnabled(topAxisLineEnabled);
-        lineChart.getXAxis().setTextColor(Color.parseColor(topAxisTextColor));
-        lineChart.getXAxis().setAxisLineWidth(topAxisLineWidth);
-        lineChart.getXAxis().setTextSize(topAxisFontSize);
-        lineChart.getXAxis().setAxisLineColor(Color.parseColor(topAxisLineColor));
+        lineChart.getXAxis().setEnabled(xAxisLineEnabled);
+        lineChart.getXAxis().setTextColor(Color.parseColor(xAxisTextColor));
+        lineChart.getXAxis().setAxisLineWidth(xAxisLineWidth);
+        lineChart.getXAxis().setTextSize(xAxisFontSize);
+        lineChart.getXAxis().setAxisLineColor(Color.parseColor(xAxisLineColor));
 
         // Grid
             //Horizontal
@@ -187,8 +270,267 @@ public class ChartStyle {
 
 
 
-
         return lineChart;
+    }
+
+
+
+
+
+
+    public class ChartGradient{
+        public String[] colors;
+        public String orientation;
+        public String type;
+
+        public GradientDrawable generateGradient(){
+            GradientDrawable gradientDrawable = new GradientDrawable();
+            int[] gColors = new int[colors.length];
+
+            for(int i=0; i<colors.length;i++)
+                gColors[i] = Color.parseColor(this.colors[i]);
+
+            gradientDrawable.setColors(gColors);
+
+            gradientDrawable.setOrientation(GradientDrawable.Orientation.valueOf(orientation));
+            int type =GradientDrawable.LINEAR_GRADIENT;
+            switch (this.type){
+                case "LINEAR_GRADIENT":
+                    type = GradientDrawable.LINEAR_GRADIENT;
+                    break;
+                case "RADIAL_GRADIENT":
+                    type = GradientDrawable.RADIAL_GRADIENT;
+                    break;
+                case "SWEEP_GRADIENT":
+                    type =GradientDrawable.SWEEP_GRADIENT;
+                    break;
+            }
+            gradientDrawable.setGradientType(type);
+            gradientDrawable.setShape(GradientDrawable.RECTANGLE);
+
+            return gradientDrawable;
+        }
+    }
+
+
+    public String getChartBackground() {
+        return chartBackground;
+    }
+
+    public String getChartLineColor() {
+        return chartLineColor;
+    }
+
+    public float getChartLineWidth() {
+        return chartLineWidth;
+    }
+
+    public String getLineMode() {
+        return lineMode;
+    }
+
+    public boolean isDrawChartBorder() {
+        return drawChartBorder;
+    }
+
+    public String getBorderColor() {
+        return borderColor;
+    }
+
+    public String getCircleColor() {
+        return circleColor;
+    }
+
+    public float getCircleRadius() {
+        return circleRadius;
+    }
+
+    public boolean isDrawCircle() {
+        return drawCircle;
+    }
+
+    public boolean isDrawCircleHole() {
+        return drawCircleHole;
+    }
+
+    public String getCircleHoleColor() {
+        return circleHoleColor;
+    }
+
+    public float getCircleHoleRadius() {
+        return circleHoleRadius;
+    }
+
+    public boolean isDrawTextValue() {
+        return drawTextValue;
+    }
+
+    public String getValueTextColor() {
+        return valueTextColor;
+    }
+
+    public float getValueFontSize() {
+        return valueFontSize;
+    }
+
+    public boolean isDrawHighlightLine() {
+        return drawHighlightLine;
+    }
+
+    public String getHighlightLineColor() {
+        return highlightLineColor;
+    }
+
+    public float getHighlightLineWidth() {
+        return highlightLineWidth;
+    }
+
+    public boolean isLeftAxisLineEnabled() {
+        return leftAxisLineEnabled;
+    }
+
+    public String getLeftAxisLineColor() {
+        return leftAxisLineColor;
+    }
+
+    public String getLeftAxisTextColor() {
+        return leftAxisTextColor;
+    }
+
+    public float getLeftAxisFontSize() {
+        return leftAxisFontSize;
+    }
+
+    public float getLeftAxisLineWidth() {
+        return leftAxisLineWidth;
+    }
+
+    public boolean isRightAxisLineEnabled() {
+        return rightAxisLineEnabled;
+    }
+
+    public String getRightAxisLineColor() {
+        return rightAxisLineColor;
+    }
+
+    public String getRightAxisTextColor() {
+        return rightAxisTextColor;
+    }
+
+    public float getRightAxisFontSize() {
+        return rightAxisFontSize;
+    }
+
+    public float getRightAxisLineWidth() {
+        return rightAxisLineWidth;
+    }
+
+    public boolean isxAxisLineEnabled() {
+        return xAxisLineEnabled;
+    }
+
+    public String getxAxisLineColor() {
+        return xAxisLineColor;
+    }
+
+    public String getxAxisTextColor() {
+        return xAxisTextColor;
+    }
+
+    public float getxAxisFontSize() {
+        return xAxisFontSize;
+    }
+
+    public float getxAxisLineWidth() {
+        return xAxisLineWidth;
+    }
+
+    public String getxAxisPosition() {
+        return xAxisPosition;
+    }
+
+    public boolean isDrawHorizontalGridLines() {
+        return drawHorizontalGridLines;
+    }
+
+    public float getHorizontalGridLineWidth() {
+        return horizontalGridLineWidth;
+    }
+
+    public String getHorizontalGridLineColor() {
+        return horizontalGridLineColor;
+    }
+
+    public boolean isDrawVerticalGridLines() {
+        return drawVerticalGridLines;
+    }
+
+    public float getVerticalGridLineWidth() {
+        return verticalGridLineWidth;
+    }
+
+    public String getVerticalGridLineColor() {
+        return verticalGridLineColor;
+    }
+
+    public boolean isDrawDescription() {
+        return drawDescription;
+    }
+
+    public String getDescriptionColor() {
+        return descriptionColor;
+    }
+
+    public String getDescriptionAlignment() {
+        return descriptionAlignment;
+    }
+
+    public float getDescriptionFontSize() {
+        return descriptionFontSize;
+    }
+
+    public boolean isDrawLegend() {
+        return drawLegend;
+    }
+
+    public String getLegendTextColor() {
+        return legendTextColor;
+    }
+
+    public float getLegendFontSize() {
+        return legendFontSize;
+    }
+
+    public float getOffsetLeft() {
+        return offsetLeft;
+    }
+
+    public float getOffsetRight() {
+        return offsetRight;
+    }
+
+    public float getOffsetTop() {
+        return offsetTop;
+    }
+
+    public float getOffsetBottom() {
+        return offsetBottom;
+    }
+
+    public boolean isFill() {
+        return fill;
+    }
+
+    public String getFillColor() {
+        return fillColor;
+    }
+
+    public boolean isGradientFill() {
+        return gradientFill;
+    }
+
+    public ChartGradient[] getGradients() {
+        return gradients;
     }
 }
 
