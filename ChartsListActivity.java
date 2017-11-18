@@ -10,9 +10,11 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
 import android.util.Log;
 
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.colinear.graphstuff.DB.Entities.ChartEntity;
 import com.colinear.graphstuff.DB.Entities.EntryEntity;
 
@@ -60,7 +62,7 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
         super.onResume();
         chartListViewModel = ViewModelProviders.of(this).get(ChartListViewModel.class);
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
@@ -82,7 +84,7 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
                 .subscribe(this::onChartsLoaded);   */
 
 
-
+      //  generateDummyData();
     }
 
 
@@ -96,7 +98,7 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.setCustomAnimations(R.anim.fadein,
                 R.anim.fadeout, R.anim.fadein, R.anim.fadeout);
-        fragmentTransaction.add(R.id.outer_layout, createChartFragment,FRAGMENT_NAME);
+        fragmentTransaction.replace(R.id.outer_layout, createChartFragment,FRAGMENT_NAME);
         fragmentTransaction.addToBackStack(FRAGMENT_NAME);
 
         fragmentTransaction.commit();
@@ -135,16 +137,6 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
     }
 
     @Override
-    public void onAddEntryClicked(String chartTitle, int highestEntry) {
-        Log.i("Chart List activity","On chart plus clicked " + chartTitle);
-        ArrayList<EntryEntity> entries = new ArrayList<>();
-
-            entries.add(new EntryEntity(highestEntry,"comment",r.nextInt(30),chartTitle));
-
-        chartListViewModel.addEntries(entries);
-    }
-
-    @Override
     public void onChartClicked(String chartTitle) {
         Log.i("Chart callback","Chart clicked "+ chartTitle);
 
@@ -163,6 +155,29 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
 
         fragmentTransaction.commit();
     }
+
+    @Override
+    public void onChartLongClicked(String chartTitle, int highestEntry) {
+
+
+        new MaterialDialog.Builder(this)
+                .title("Value")
+                .content("Enter the value")
+                .inputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL )
+                .input("0", "", new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(MaterialDialog dialog, CharSequence input) {
+                        ArrayList<EntryEntity> entries = new ArrayList<>();
+                        entries.add(new EntryEntity(highestEntry,"comment",Double.parseDouble(input.toString()),chartTitle));
+                        chartListViewModel.addEntries(entries);
+                    }
+                }).show();
+
+
+
+
+    }
+
 
 
     public void generateDummyData(){

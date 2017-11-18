@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,7 +37,6 @@ import java.util.List;
  */
 public class ChartDetailFragment extends LifecycleFragment implements AdapterView.OnItemSelectedListener, View.OnClickListener, OnChartValueSelectedListener {
 
-
     FloatingActionButton fab;
     ChartListViewModel chartListViewModel;
 
@@ -49,16 +47,17 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
 
     String[] intervals = new String[]{"All", "Last 7 Days", "Last 30 Days"};
 
-
     TextView highlightIndexTextView;
     TextView highlightValueTextView;
     TextView highlightCommentTextView;
 
-
     boolean lockZoom;
-    boolean lockScroll;
     boolean showValues;
 
+
+    //todo maybe instead of data point detail, also have a scrollable list of the entries
+    // when you click an entry, highlight the datapoint, and the other way around
+    // only after that show the details
 
     public ChartDetailFragment() {
     }
@@ -68,32 +67,31 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         return inflater.inflate(R.layout.fragment_chart_detail, container, false);
     }
 
-
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
 
-        fab = (FloatingActionButton) getActivity().findViewById(R.id.button);
+        fab = getActivity().findViewById(R.id.button);
         fab.hide();
         chartListViewModel = ViewModelProviders.of(getActivity()).get(ChartListViewModel.class);
 
         Log.i("chart", chartListViewModel.getCurrentChartTitle());
         chartListViewModel.getChartByTitle(chartListViewModel.getCurrentChartTitle()).observe(this, this::onChartLoaded);
 
-        lineChart = (LineChart) view.findViewById(R.id.full_chart);
+        lineChart = view.findViewById(R.id.full_chart);
         lineChart.setOnChartValueSelectedListener(this);
-        titleTextView = (TextView) view.findViewById(R.id.chart_detail_title_textview);
+        titleTextView = view.findViewById(R.id.chart_detail_title_textview);
 
 
-        highlightCommentTextView = (TextView) view.findViewById(R.id.chart_detail_highlight_comment);
-        highlightValueTextView = (TextView) view.findViewById(R.id.chart_detail_highlight_value);
-        highlightIndexTextView = (TextView) view.findViewById(R.id.chart_detail_highlight_index);
+        highlightCommentTextView = view.findViewById(R.id.chart_detail_highlight_comment);
+        highlightValueTextView = view.findViewById(R.id.chart_detail_highlight_value);
+        highlightIndexTextView = view.findViewById(R.id.chart_detail_highlight_index);
 
         view.findViewById(R.id.chart_detail_options_button).setOnClickListener(this);
 
         // Interval select spinner
-        Spinner spinner = (Spinner) view.findViewById(R.id.spinner);
+        Spinner spinner = view.findViewById(R.id.spinner);
         spinner.setOnItemSelectedListener(this);
 
 
@@ -118,30 +116,19 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
     }
 
     private void redrawChartView() {
-        Log.i("chart", chartEntity.toString());
-
-
         if (chartEntity.getEntries().size() <= 0)
             return;
-
 
         ArrayList<Entry> mpEntries = new ArrayList<>();
         for (EntryEntity e : chartEntity.getEntries())
             mpEntries.add(new Entry(e.getTimestamp(), (float) e.getValue(), e));
 
-
         ChartStyle chartStyle = ChartStyle.fromJson("chartDetailStyle.json", this.getActivity());
-
-
         LineDataSet dataSet = new LineDataSet(mpEntries, "Label"); //apply styling to it
         chartStyle.applyStyle(dataSet);
-        Log.i("JSON", chartStyle.toJson());
         LineData lineData = new LineData(dataSet);
         lineChart.setData(lineData); // apply styling to line chart
         chartStyle.applyStyle(lineChart);
-
-        Log.i("JSON", dataSet.isDrawFilledEnabled() + "");
-
 
         lineChart.invalidate();
 
@@ -184,74 +171,52 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
 
     }
 
-
     public void toast(String text) {
         Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onClick(View v) {
-
-
         ArrayList<String> options = new ArrayList();
-        options.add("Lock Scrolling"); // todo remove lock scrolling.
         options.add("Lock Zoom");
         options.add("Show Values");
 
         ArrayList<Integer> checkedState = new ArrayList<>();
-        if(lockScroll)
-            checkedState.add(0);
+
         if(lockZoom)
-            checkedState.add(1);
+            checkedState.add(Const.LOCK_ZOOM);
         if(showValues)
-            checkedState.add(2);
+            checkedState.add(Const.SHOW_VALUES);
 
         Integer[] checkedStateArray = checkedState.toArray(new Integer[checkedState.size()]);
 
         if (v.getId() == R.id.chart_detail_options_button) {
             new MaterialDialog.Builder(getActivity())
-                    .title("Title")
+                    .title("Options")
                     .items(options)
                     .itemsCallbackMultiChoice(checkedStateArray, new MaterialDialog.ListCallbackMultiChoice() {
                         @Override
                         public boolean onSelection(MaterialDialog dialog, Integer[] which, CharSequence[] text) {
-
-                            lockScroll=Arrays.asList(which).contains(0);
-                            lockZoom =Arrays.asList(which).contains(1);
-                            showValues = Arrays.asList(which).contains(2);
-
-
-                            updateChart();
-
-
+                            lockZoom =Arrays.asList(which).contains(Const.LOCK_ZOOM);
+                            showValues = Arrays.asList(which).contains(Const.SHOW_VALUES);
+                            applyChartOptions();
                             return true;
                         }
                     })
                     .positiveText("Apply")
                     .show();
         }
-
-
         lineChart.invalidate();
     }
 
 
-    public void updateChart() {
-
+    public void applyChartOptions() {
         Log.i("Options","Updated");
         lineChart.setPinchZoom(!lockZoom);
         lineChart.setDoubleTapToZoomEnabled(!lockZoom);
         lineChart.setScaleEnabled(!lockZoom);
 
-
         lineChart.getData().setDrawValues(showValues);
-
-        if (showValues)
-            lineChart.disableScroll();
-        else
-            lineChart.enableScroll();
-
-
     }
 
 
@@ -267,7 +232,6 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
 
     @Override
     public void onNothingSelected() {
-        //todo add options to chart dropdown to lock zoom, lock scroll etc.
         //todo mark commented entries on the chart
         //todo add FAB to chart detail fragment to add entry only if that day there have not been an entry added
         //todo when nothing is selected, show other values like min, max, interval etc.
