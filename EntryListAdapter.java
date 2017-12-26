@@ -1,12 +1,15 @@
 package com.colinear.graphstuff;
 
 
+import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.colinear.graphstuff.DB.Entities.ChartEntity;
 import com.colinear.graphstuff.DB.Entities.EntryEntity;
 
 import java.text.DateFormat;
@@ -21,12 +24,27 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
 
     List<EntryEntity> entries = new ArrayList<>();
 
+    private int highlightedIndex;
+    private Context context;
+    private int colorScheme= Const.COLOR_SCHEME_GREEN;
+    private OnEntryClickListener onEntryClickListener;
 
 
-    public EntryListAdapter(  ) {
-
+    public EntryListAdapter(Context context, OnEntryClickListener onEntryClickListener) {
+        this.context = context;
+        this.onEntryClickListener = onEntryClickListener;
 
     }
+
+    public void setHighlightedIndex(int highlightedIndex){
+        this.highlightedIndex = highlightedIndex;
+        notifyDataSetChanged();
+    }
+
+    public void setColorScheme(int colorScheme){
+        this.colorScheme = colorScheme;
+    }
+
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -42,6 +60,19 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
         Date date = new Date( entries.get(position).getTimestamp());
         holder.entryTimestamp.setText("Added on: "+df.format(date));
         holder.entryValue.setText(""+entries.get(position).getValue());
+        holder.layout.setOnClickListener(v -> {
+            onEntryClickListener.onEntryClicked(entries.get(position).getIndex());
+        });
+
+        if(entries.get(position).getIndex() == highlightedIndex){
+            holder.entryValue.setTextColor(Const.GET_COLOR_BY_SCHEME(colorScheme,context));
+            holder.editButton.setTextColor(Const.GET_COLOR_BY_SCHEME(colorScheme,context));
+            holder.entryTimestamp.setTextColor(Const.GET_COLOR_BY_SCHEME(colorScheme,context));
+        }else{
+            holder.entryValue.setTextColor(context.getResources().getColor(R.color.cardview_dark_background));
+            holder.editButton.setTextColor(context.getResources().getColor(R.color.cardview_dark_background));
+            holder.entryTimestamp.setTextColor(context.getResources().getColor(R.color.colorAccent));
+        }
 
 
     }
@@ -70,6 +101,8 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
 
         TextView entryTimestamp;
         TextView entryValue;
+        TextView editButton;
+        View layout;
 
 
 
@@ -77,12 +110,16 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
             super(v);
             entryTimestamp = v.findViewById(R.id.entry_timestamp);
             entryValue = v.findViewById(R.id.entry_value);
+            editButton = v.findViewById(R.id.entry_edit_button);
+            layout = v.findViewById(R.id.linearLayout);
         }
-
 
 
 
     }
 
+    public interface OnEntryClickListener{
+        public void onEntryClicked(int entryIndex);
+    }
 
 }

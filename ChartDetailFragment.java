@@ -38,7 +38,7 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ChartDetailFragment extends LifecycleFragment implements AdapterView.OnItemSelectedListener, View.OnClickListener, OnChartValueSelectedListener {
+public class ChartDetailFragment extends LifecycleFragment implements AdapterView.OnItemSelectedListener, View.OnClickListener, OnChartValueSelectedListener, EntryListAdapter.OnEntryClickListener {
 
     FloatingActionButton fab;
     ChartListViewModel chartListViewModel;
@@ -57,6 +57,7 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
 
     FloatingActionButton chartDetailFab;
 
+    boolean clickedOnEntityDirectly = false; // if true, dont scroll to the highlighted entry item in the list.
     //todo maybe instead of data point detail, also have a scrollable list of the entries
     // when you click an entry, highlight the datapoint, and the other way around
     // only after that show the details
@@ -117,7 +118,7 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         // specify an adapter (see also next example)
-        mAdapter = new EntryListAdapter();
+        mAdapter = new EntryListAdapter(getActivity(), this);
         mRecyclerView.setAdapter(mAdapter);
 
     }
@@ -129,6 +130,7 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         titleTextView.setText(chart.getTitle());
         chartListViewModel.getEntriesByChart(chart.getTitle()).observe(this, this::onEntriesUpdated);
         intervalSpinner.setOnItemSelectedListener(this);
+        mAdapter.setColorScheme(chartEntity.getColorScheme());
 
 
     }
@@ -158,7 +160,17 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         for (EntryEntity e : chartEntity.getEntries())
             mpEntries.add(new Entry(e.getIndex(), (float) e.getValue(), e));
 
-        ChartStyle chartStyle = ChartStyle.fromJson("chartDetailStyle.json", this.getActivity());
+        ChartStyle chartStyle = null;
+        if(chartEntity.getColorScheme() == Const.COLOR_SCHEME_GREEN)
+            chartStyle = ChartStyle.fromJson("chartDetailStyleGreen.json", this.getActivity());
+        else if(chartEntity.getColorScheme() == Const.COLOR_SCHEME_BLUE)
+            chartStyle = ChartStyle.fromJson("chartDetailStyleBlue.json", this.getActivity());
+        else if(chartEntity.getColorScheme() == Const.COLOR_SCHEME_RED)
+            chartStyle = ChartStyle.fromJson("chartDetailStyleRed.json", this.getActivity());
+        else{
+            chartStyle = ChartStyle.fromJson("chartDetailStyleGreen.json", this.getActivity());
+        }
+
         LineDataSet dataSet = new LineDataSet(mpEntries, "Label"); //apply styling to it
         chartStyle.applyStyle(dataSet);
         LineData lineData = new LineData(dataSet);
@@ -276,7 +288,21 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
 
     @Override
     public void onValueSelected(Entry e, Highlight h) {
+        if(e.getData() == null)
+            return;
+
+
+
+
+
         EntryEntity entryEntity = (EntryEntity) e.getData();
+        mAdapter.setHighlightedIndex(entryEntity.getIndex());
+
+        if(!clickedOnEntityDirectly)
+            mLayoutManager.scrollToPosition(chartEntity.getEntries().size() - entryEntity.getIndex() - 1);
+        else
+            clickedOnEntityDirectly=false;
+
         Log.i("SelectedEntry", entryEntity.toString());
 
 
@@ -284,11 +310,17 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
 
     @Override
     public void onNothingSelected() {
-        //todo mark commented entries on the chart
+
         //todo add FAB to chart detail fragment to add entry only if that day there have not been an entry added
-        //todo when nothing is selected, show other values like min, max, interval etc.
         //todo mark days that have been entered automatically
     }
 
 
+    @Override
+    public void onEntryClicked(int entryIndex) {
+        Log.i("LOG","idx: "+entryIndex);
+        clickedOnEntityDirectly = true;
+        lineChart.highlightValue((float)entryIndex,0);
+
+    }
 }

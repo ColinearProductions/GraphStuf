@@ -90,10 +90,11 @@ public class EntryEntity {
     public String toString() {
         return "EntryEntity{" +
                 "id=" + id +
-                ", timestamp='" + timestamp + '\'' +
+                ", index=" + index +
+                ", timestamp=" + timestamp +
                 ", comment='" + comment + '\'' +
                 ", value=" + value +
-                ", title=" + chartTitle +
+                ", chartTitle='" + chartTitle + '\'' +
                 '}';
     }
 }

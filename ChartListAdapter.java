@@ -64,6 +64,9 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
         });
 
         holder.chartContainerLayout.setOnLongClickListener(v ->{
+
+
+
             chartClickListener.onChartLongClicked(charts.get(position).getTitle(), charts.get(position).getLastIndex());
             return true;
         });
