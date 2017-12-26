@@ -29,10 +29,8 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
     private ChartListAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private ChartListViewModel chartListViewModel;
-    Random r = new Random();
-    public int idx = 0;
 
-//todo App name : Provis
+    //todo App name : Provis
     // progress visualizer
 
     @Override
@@ -41,19 +39,6 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
         setContentView(R.layout.activity_charts_list);
 
         Log.i("ChartListActivity", "Started");
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     }
 
@@ -157,7 +142,23 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
     }
 
     @Override
-    public void onChartLongClicked(String chartTitle, int highestEntry) {
+    public void onChartLongClicked(String chartTitle, int lastIndex) {
+
+        /*
+        String FRAGMENT_NAME ="EntryDetailFragment";
+
+        Fragment entryDetailFragment =  new EntryDetailFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.setCustomAnimations(R.anim.fadein,
+                R.anim.fadeout, R.anim.fadein, R.anim.fadeout);
+        fragmentTransaction.replace(R.id.outer_layout, entryDetailFragment,FRAGMENT_NAME);
+        fragmentTransaction.addToBackStack(FRAGMENT_NAME);
+
+        fragmentTransaction.commit();
+        */
+
 
 
         new MaterialDialog.Builder(this)
@@ -167,9 +168,8 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
                 .input("0", "", new MaterialDialog.InputCallback() {
                     @Override
                     public void onInput(MaterialDialog dialog, CharSequence input) {
-                        ArrayList<EntryEntity> entries = new ArrayList<>();
-                        entries.add(new EntryEntity(highestEntry,"comment",Double.parseDouble(input.toString()),chartTitle));
-                        chartListViewModel.addEntries(entries);
+
+                        chartListViewModel.addEntry(new EntryEntity("comment",Double.parseDouble(input.toString()),chartTitle,lastIndex));
                     }
                 }).show();
 
@@ -197,10 +197,10 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
                 98.8,98.1,98.0,98.0,96.7,97.0,97.2,97.9,97.3,97.2,97.4};
 
         String chartTitle = "Demo";
-        chartListViewModel.addChart(new ChartEntity(chartTitle, "descr", "color", 1));
+        chartListViewModel.addChart(new ChartEntity(chartTitle, Const.COLOR_SCHEME_GREEN, true));
         ArrayList<EntryEntity> entries = new ArrayList<>();
         for(int i=0;i<data.length;i++){
-            entries.add(new EntryEntity(i, "comment", data[i], chartTitle));
+            entries.add(new EntryEntity( "comment", data[i], chartTitle, i));
         }
 
         chartListViewModel.addEntries(entries);

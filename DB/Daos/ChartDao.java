@@ -27,6 +27,8 @@ public interface ChartDao {
     @Query("SELECT * FROM charts where title=:title")
     LiveData<ChartEntity> getChartLiveData(String title);
 
+    @Query("SELECT * FROM charts where title=:title LIMIT 1")
+    ChartEntity getChart(String title);
 
 
 
@@ -36,10 +38,10 @@ public interface ChartDao {
 
 
 
-
-
     @Update(onConflict = REPLACE)
     void updateChart(ChartEntity chartEntity);
+
+
 
 }
 

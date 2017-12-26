@@ -2,6 +2,7 @@ package com.colinear.graphstuff.DB;
 
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.RoomDatabase;
+import android.arch.persistence.room.TypeConverters;
 
 import com.colinear.graphstuff.DB.Daos.ChartDao;
 import com.colinear.graphstuff.DB.Daos.EntryDao;
@@ -13,7 +14,8 @@ import com.colinear.graphstuff.DB.Entities.EntryEntity;
  */
 
 
-@Database(entities = {EntryEntity.class, ChartEntity.class}, version = 7)
+@Database(entities = {EntryEntity.class, ChartEntity.class}, version = 10)
+@TypeConverters({DateConverter.class})
 public abstract class ChartDatabase  extends RoomDatabase{
 
     public abstract EntryDao entryDao();

@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.CompoundButtonCompat;
 import android.text.Editable;
@@ -36,7 +35,7 @@ import io.reactivex.schedulers.Schedulers;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class CreateChartFragment extends LifecycleFragment implements TextWatcher {
+public class EntryDetailFragment extends LifecycleFragment implements TextWatcher {
 
     FloatingActionButton fab;
 
@@ -55,7 +54,7 @@ public class CreateChartFragment extends LifecycleFragment implements TextWatche
 
     Button createChartButton;
 
-    public CreateChartFragment() {
+    public EntryDetailFragment() {
     }
 
     @Override
@@ -137,7 +136,7 @@ public class CreateChartFragment extends LifecycleFragment implements TextWatche
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_create_chart, container, false);
+        return inflater.inflate(R.layout.fragment_entity_detail, container, false);
     }
 
     @Override

@@ -11,6 +11,7 @@ import com.colinear.graphstuff.DB.ChartRepository;
 import com.colinear.graphstuff.DB.Entities.EntryEntity;
 import com.github.mikephil.charting.charts.Chart;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -47,6 +48,14 @@ public class ChartListViewModel extends AndroidViewModel {
                 .subscribeOn(Schedulers.io())
                 .subscribe(result -> Log.i("ChartListViewModel", "Add entries Result: " + result));
     }
+
+    void addEntry(EntryEntity entryEntities) {
+
+        chartRepository.addEntry(entryEntities).observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(result -> Log.i("ChartListViewModel", "Add entries Result: " + result));
+    }
+
 
 
 

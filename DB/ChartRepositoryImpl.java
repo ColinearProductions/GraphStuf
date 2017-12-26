@@ -19,8 +19,6 @@ public class ChartRepositoryImpl implements ChartRepository {
     ChartDatabase chartDatabase;
 
 
-
-
     public ChartRepositoryImpl(ChartDatabase chartDatabase) {
         this.chartDatabase = chartDatabase;
 
@@ -39,7 +37,12 @@ public class ChartRepositoryImpl implements ChartRepository {
 
     @Override
     public Single<Boolean> addEntry(EntryEntity entryEntity) {
+
+
         return Single.fromCallable(() -> {
+                    ChartEntity chart = chartDatabase.chartDao().getChart(entryEntity.getChartTitle());
+                    chart.setLastIndex(chart.getLastIndex() + 1);
+                    chartDatabase.chartDao().updateChart(chart);
                     chartDatabase.entryDao().addEntry(entryEntity);
                     return true;
                 }
@@ -50,13 +53,11 @@ public class ChartRepositoryImpl implements ChartRepository {
     public Single<Boolean> addEntries(List<EntryEntity> entryEntities) {
         return Single.fromCallable(() -> {
             chartDatabase.entryDao().addEntries(entryEntities);
-            Log.i("ChartRepoImpl","Added many entries");
+            Log.i("ChartRepoImpl", "Added many entries");
             return true;
 
         });
     }
-
-
 
 
     @Override
@@ -79,7 +80,7 @@ public class ChartRepositoryImpl implements ChartRepository {
 
     @Override
     public Single<List<ChartEntity>> getCharts() {
-        return Single.fromCallable(()->{
+        return Single.fromCallable(() -> {
             return chartDatabase.chartDao().getCharts();
         });
 
@@ -89,7 +90,7 @@ public class ChartRepositoryImpl implements ChartRepository {
     @Override
     public LiveData<List<ChartEntity>> getChartsLiveData() {
 
-            return chartDatabase.chartDao().getChartsLiveData();
+        return chartDatabase.chartDao().getChartsLiveData();
 
     }
 

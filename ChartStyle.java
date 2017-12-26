@@ -9,6 +9,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.util.Log;
 
+import com.github.mikephil.charting.charts.Chart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -178,6 +179,9 @@ public class ChartStyle {
     }
 
     public LineChart applyStyle(LineChart lineChart){
+
+
+
 
         lineChart.setBackgroundColor(Color.parseColor(chartBackground));
 

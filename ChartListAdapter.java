@@ -64,7 +64,7 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
         });
 
         holder.chartContainerLayout.setOnLongClickListener(v ->{
-            chartClickListener.onChartLongClicked(charts.get(position).getTitle(), charts.get(position).getEntries().size() + 1);
+            chartClickListener.onChartLongClicked(charts.get(position).getTitle(), charts.get(position).getLastIndex());
             return true;
         });
 
@@ -78,16 +78,33 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
 
 
 
-        if (entries.size() < 1)
-            return;
 
         ArrayList<Entry> mpEntries = new ArrayList<>();
 
-        for (EntryEntity e : entries)
-            mpEntries.add(new Entry(e.getTimestamp(), (float)e.getValue()));
+        if (entries.size() < 1) { // if no data, add 2 points with value 0
+            mpEntries.add(new Entry(0,1));
+            mpEntries.add(new Entry(1,1));
+        }else {
+            for (EntryEntity e : entries)
+                mpEntries.add(new Entry(e.getIndex(), (float) e.getValue()));
+            if(entries.size()==1)
+                mpEntries.add(new Entry(entries.get(0).getIndex(), (float) entries.get(0).getValue()));
 
 
-        ChartStyle chartStyle = ChartStyle.fromJson("chartListStyle.json", ctx);
+        }
+
+
+        ChartStyle chartStyle = null;
+
+        if (charts.get(position).getColorScheme() == Const.COLOR_SCHEME_GREEN){
+            chartStyle = ChartStyle.fromJson("chartListStyleGreen.json", ctx);
+        }else if(charts.get(position).getColorScheme() == Const.COLOR_SCHEME_RED){
+            chartStyle = ChartStyle.fromJson("chartListStyleRed.json", ctx);
+        }else{
+            chartStyle = ChartStyle.fromJson("chartListStyleBlue.json", ctx);
+        }
+
+
         LineDataSet dataSet = new LineDataSet(mpEntries, "Label");
         chartStyle.applyStyle(dataSet);
         LineChart lineChart = holder.chartView;
@@ -126,6 +143,9 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
             super(v);
             title = v.findViewById(R.id.chart_title);
             chartView = v.findViewById(R.id.full_chart);
+
+
+
             chartContainerLayout = v.findViewById(R.id.chart_container_layout);
 
         }
