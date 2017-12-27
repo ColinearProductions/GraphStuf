@@ -3,6 +3,7 @@ package com.colinear.graphstuff;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,13 +27,15 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
 
     private int highlightedIndex;
     private Context context;
-    private int colorScheme= Const.COLOR_SCHEME_GREEN;
+
     private OnEntryClickListener onEntryClickListener;
+    private ChartStyle chartStyle;
+    private String chartTheme = "BLUE";
 
-
-    public EntryListAdapter(Context context, OnEntryClickListener onEntryClickListener) {
+    public EntryListAdapter(Context context, OnEntryClickListener onEntryClickListener, ChartStyle chartStyle) {
         this.context = context;
         this.onEntryClickListener = onEntryClickListener;
+        this.chartStyle = chartStyle;
 
     }
 
@@ -41,9 +44,14 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
         notifyDataSetChanged();
     }
 
-    public void setColorScheme(int colorScheme){
-        this.colorScheme = colorScheme;
+    public void setTheme( String chartTheme){
+        this.chartTheme = chartTheme;
+
     }
+
+
+
+
 
 
     @Override
@@ -64,14 +72,21 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
             onEntryClickListener.onEntryClicked(entries.get(position).getIndex());
         });
 
+        Typeface face = Typeface.createFromAsset(context.getAssets(), "Bariol_Bold.otf");
+        holder.entryValue.setTypeface(face);
+        holder.editButton.setTypeface(face);
+        holder.entryTimestamp.setTypeface(face);
+
         if(entries.get(position).getIndex() == highlightedIndex){
-            holder.entryValue.setTextColor(Const.GET_COLOR_BY_SCHEME(colorScheme,context));
-            holder.editButton.setTextColor(Const.GET_COLOR_BY_SCHEME(colorScheme,context));
-            holder.entryTimestamp.setTextColor(Const.GET_COLOR_BY_SCHEME(colorScheme,context));
+            int color = ChartStyle.getColorResourceByName(chartStyle.getHighlightLineColor(), context, chartTheme);
+            holder.entryValue.setTextColor(color);
+            holder.editButton.setTextColor(color);
+            holder.entryTimestamp.setTextColor(color);
         }else{
-            holder.entryValue.setTextColor(context.getResources().getColor(R.color.cardview_dark_background));
-            holder.editButton.setTextColor(context.getResources().getColor(R.color.cardview_dark_background));
-            holder.entryTimestamp.setTextColor(context.getResources().getColor(R.color.colorAccent));
+            int color = ChartStyle.getColorResourceByName(chartStyle.getChartLineColor(), context, chartTheme);
+            holder.entryValue.setTextColor(color);
+            holder.editButton.setTextColor(color);
+            holder.entryTimestamp.setTextColor(color);
         }
 
 

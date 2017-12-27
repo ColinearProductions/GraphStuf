@@ -9,17 +9,18 @@ public class Const {
     public static int LOCK_ZOOM = 0;
     public static int SHOW_VALUES = 1;
 
-    public static int COLOR_SCHEME_RED = 100;
-    public static int COLOR_SCHEME_GREEN = 101;
-    public static int COLOR_SCHEME_BLUE = 102;
+    public static String COLOR_SCHEME_RED = "RED";
+    public static String COLOR_SCHEME_GREEN = "GREEN";
+    public static String COLOR_SCHEME_BLUE = "BLUE";
 
-    public static int GET_COLOR_BY_SCHEME(int SCHEME_NAME, Context context) {
-        if (SCHEME_NAME == COLOR_SCHEME_RED)
-            return context.getResources().getColor(R.color.red_scheme);
-        else if (SCHEME_NAME == COLOR_SCHEME_GREEN)
-            return context.getResources().getColor(R.color.green_scheme);
+    public static int GET_COLOR_BY_SCHEME(String SCHEME_NAME, Context context) {
+        if (SCHEME_NAME.equals(COLOR_SCHEME_RED))
+            return context.getResources().getColor(R.color.RED_line_color);
+        else if (SCHEME_NAME.equals(COLOR_SCHEME_GREEN))
+            return context.getResources().getColor(R.color.GREEN_line_color);
         else
-            return context.getResources().getColor(R.color.blue_scheme);
+            return context.getResources().getColor(R.color.BLUE_line_color);
     }
+
 
 }

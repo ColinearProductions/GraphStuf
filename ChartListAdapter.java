@@ -3,6 +3,7 @@ package com.colinear.graphstuff;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -100,22 +101,27 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
         ChartStyle chartStyle = null;
 
         if (charts.get(position).getColorScheme() == Const.COLOR_SCHEME_GREEN){
-            chartStyle = ChartStyle.fromJson("chartListStyleGreen.json", ctx);
+            chartStyle = ChartStyle.fromJson("chartListStyle.json", ctx);
         }else if(charts.get(position).getColorScheme() == Const.COLOR_SCHEME_RED){
-            chartStyle = ChartStyle.fromJson("chartListStyleRed.json", ctx);
+            chartStyle = ChartStyle.fromJson("chartListStyle.json", ctx);
         }else{
-            chartStyle = ChartStyle.fromJson("chartListStyleBlue.json", ctx);
+            chartStyle = ChartStyle.fromJson("chartListStyle.json", ctx);
         }
 
 
         LineDataSet dataSet = new LineDataSet(mpEntries, "Label");
-        chartStyle.applyStyle(dataSet);
+        chartStyle.applyStyle(dataSet, ctx, charts.get(position).getColorScheme());
         LineChart lineChart = holder.chartView;
         LineData lineData = new LineData(dataSet);
         lineChart.setData(lineData);
-        chartStyle.applyStyle(lineChart);
+        chartStyle.applyStyle(lineChart, ctx,charts.get(position).getColorScheme());
 
-        holder.title.setTextColor(Color.parseColor(chartStyle.getChartLineColor()));
+        holder.setTypeface(ctx);
+
+
+        int color = ChartStyle.getColorResourceByName(chartStyle.getChartLineColor(), ctx,charts.get(position).getColorScheme());
+
+        holder.title.setTextColor(color);
 
 
         lineChart.setTouchEnabled(false);
@@ -149,9 +155,17 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
 
 
 
+
+
             chartContainerLayout = v.findViewById(R.id.chart_container_layout);
 
         }
+
+        public void setTypeface(Context ctx){
+            Typeface face = Typeface.createFromAsset(ctx.getAssets(), "Bariol_Bold.otf");
+            this.title.setTypeface(face);
+        }
+
 
 
 

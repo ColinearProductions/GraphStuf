@@ -17,6 +17,7 @@ import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 
 public class ChartStyle {
     private String chartBackground = "#000000";
@@ -94,20 +95,18 @@ public class ChartStyle {
     private String fillColor = "#FFFFFF";
     private boolean gradientFill = true;
     private ChartGradient[] gradients;
-
-
-
+    
 
     //todo animation
     // todo fill
 
     private transient Gson gson = new Gson();
 
-    public String toJson(){
+    public String toJson() {
         return gson.toJson(this);
     }
 
-    public static ChartStyle fromJson(String pathToJsonFile, Context ctx){
+    public static ChartStyle fromJson(String pathToJsonFile, Context ctx) {
         String json = null;
         try {
             InputStream is = ctx.getAssets().open(pathToJsonFile);
@@ -124,15 +123,50 @@ public class ChartStyle {
 
     }
 
+    public static int getResId(String variableName, Class<?> с) {
+
+        Field field = null;
+        int resId = 0;
+        try {
+            field = с.getField(variableName);
+            try {
+                resId = field.getInt(null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return resId;
+
+    }
+
+    public static int getColorResourceByName(String name, Context context, String themePrefix) {
+        String colorName = name.substring(1, name.length());
+
+        int resId=0;
+        if(colorName.contains("*")){
+          resId = getResId(colorName.replace("*",themePrefix+"_"), R.color.class);
+        }else{
+            resId=getResId(colorName, R.color.class);
+        }
 
 
+        return context.getResources().getColor(resId);
+    }
 
 
-    public LineDataSet applyStyle(LineDataSet lineDataSet){
-        lineDataSet.setColor(Color.parseColor(chartLineColor));
+    public LineDataSet applyStyle(LineDataSet lineDataSet, Context context, String themePrefix) {
+
+        if (chartLineColor.contains("@"))
+            lineDataSet.setColor(getColorResourceByName(chartLineColor, context, themePrefix));
+        else
+            lineDataSet.setColor(Color.parseColor(chartLineColor));
+
+
         lineDataSet.setLineWidth(chartLineWidth);
 
-        switch (lineMode){
+        switch (lineMode) {
             case "CUBIC":
                 lineDataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
                 break;
@@ -147,29 +181,56 @@ public class ChartStyle {
         }
 
         lineDataSet.setDrawCircles(drawCircle);
-        lineDataSet.setCircleColor(Color.parseColor(circleColor));
+
+
+        if (circleColor.contains("@"))
+            lineDataSet.setCircleColor(getColorResourceByName(circleColor, context, themePrefix));
+        else
+            lineDataSet.setCircleColor(Color.parseColor(circleColor));
+
+
         lineDataSet.setCircleRadius(circleRadius);
         lineDataSet.setDrawCircleHole(drawCircleHole);
-        lineDataSet.setCircleColorHole(Color.parseColor(circleHoleColor));
+
+        if (circleHoleColor.contains("@"))
+            lineDataSet.setCircleColorHole(getColorResourceByName(circleHoleColor, context, themePrefix));
+        else
+            lineDataSet.setCircleColorHole(Color.parseColor(circleHoleColor));
+
+
         lineDataSet.setCircleHoleRadius(circleHoleRadius);
         lineDataSet.setDrawValues(drawTextValue);
-        lineDataSet.setValueTextColor(Color.parseColor(valueTextColor));
+
+        if (valueTextColor.contains("@"))
+            lineDataSet.setValueTextColor(getColorResourceByName(valueTextColor, context, themePrefix));
+        else
+            lineDataSet.setValueTextColor(Color.parseColor(valueTextColor));
+
+
         lineDataSet.setValueTextSize(valueFontSize);
         lineDataSet.setHighlightEnabled(drawHighlightLine);
-        lineDataSet.setHighLightColor(Color.parseColor(highlightLineColor));
+
+        if (highlightLineColor.contains("@"))
+            lineDataSet.setHighLightColor(getColorResourceByName(highlightLineColor, context, themePrefix));
+        else
+            lineDataSet.setHighLightColor(Color.parseColor(highlightLineColor));
+
+
         lineDataSet.setHighlightLineWidth(highlightLineWidth);
 
 
         lineDataSet.setDrawFilled(fill);
 
+        if (fillColor.contains("@"))
+            lineDataSet.setFillColor(getColorResourceByName(fillColor, context, themePrefix));
+        else
+            lineDataSet.setFillColor(Color.parseColor(fillColor));
 
-        lineDataSet.setFillColor(Color.parseColor(fillColor));
-
-        if(gradientFill){
+        if (gradientFill) {
             GradientDrawable[] layers = new GradientDrawable[gradients.length];
-            Log.i("JSON","There are " + layers.length + " layers");
-            for(int i=0; i <gradients.length;i++)
-                layers[i] = gradients[i].generateGradient();
+            Log.i("JSON", "There are " + layers.length + " layers");
+            for (int i = 0; i < gradients.length; i++)
+                layers[i] = gradients[i].generateGradient(context, themePrefix );
             LayerDrawable layerDrawable = new LayerDrawable(layers);
             lineDataSet.setFillDrawable(layerDrawable);
         }
@@ -178,31 +239,54 @@ public class ChartStyle {
 
     }
 
-    public LineChart applyStyle(LineChart lineChart){
+    public LineChart applyStyle(LineChart lineChart, Context context, String themePrefix) {
 
 
+        if (chartBackground.contains("@"))
+            lineChart.setBackgroundColor(getColorResourceByName(chartBackground, context, themePrefix));
+        else
+            lineChart.setBackgroundColor(Color.parseColor(chartBackground));
 
-
-        lineChart.setBackgroundColor(Color.parseColor(chartBackground));
-
-        if(overrideOffset)
+        if (overrideOffset)
             lineChart.setViewPortOffsets(offsetLeft, offsetTop, offsetRight, offsetBottom);
 
 
         // Left axis labels
         lineChart.getAxisLeft().setEnabled(leftAxisLineEnabled);
-        lineChart.getAxisLeft().setTextColor(Color.parseColor(leftAxisTextColor)); // left y-axis
-        lineChart.getAxisLeft().setAxisLineColor(Color.parseColor(leftAxisLineColor));
+
+        if (leftAxisTextColor.contains("@"))
+            lineChart.getAxisLeft().setTextColor(getColorResourceByName(leftAxisTextColor, context, themePrefix));
+        else
+            lineChart.getAxisLeft().setTextColor(Color.parseColor(leftAxisTextColor)); // left y-axis
+
+
+        if (leftAxisLineColor.contains("@"))
+            lineChart.getAxisLeft().setAxisLineColor(getColorResourceByName(leftAxisLineColor, context, themePrefix));
+        else
+            lineChart.getAxisLeft().setAxisLineColor(Color.parseColor(leftAxisLineColor));
+
+
         lineChart.getAxisLeft().setTextSize(leftAxisFontSize);
         lineChart.getAxisLeft().setAxisLineWidth(leftAxisLineWidth);
 
         // Right axis labels
         lineChart.getAxisRight().setEnabled(rightAxisLineEnabled);
-        lineChart.getAxisRight().setTextColor(Color.parseColor(rightAxisTextColor)); // left y-axis
-        lineChart.getAxisRight().setAxisLineColor(Color.parseColor(rightAxisLineColor));
+
+        if (rightAxisTextColor.contains("@"))
+            lineChart.getAxisRight().setTextColor(getColorResourceByName(rightAxisTextColor, context, themePrefix));
+        else
+            lineChart.getAxisRight().setTextColor(Color.parseColor(rightAxisTextColor)); // left y-axis
+
+
+        if (rightAxisLineColor.contains("@"))
+            lineChart.getAxisRight().setAxisLineColor(getColorResourceByName(rightAxisLineColor, context, themePrefix));
+        else
+            lineChart.getAxisRight().setAxisLineColor(Color.parseColor(rightAxisLineColor));
+
+
         lineChart.getAxisRight().setTextSize(rightAxisFontSize);
         lineChart.getAxisRight().setAxisLineWidth(rightAxisLineWidth);
-        switch (xAxisPosition){
+        switch (xAxisPosition) {
             case "top":
                 lineChart.getXAxis().setPosition(XAxis.XAxisPosition.TOP);
                 break;
@@ -221,38 +305,79 @@ public class ChartStyle {
         }
 
 
-
         // Top axis labels
         lineChart.getXAxis().setEnabled(xAxisLineEnabled);
-        lineChart.getXAxis().setTextColor(Color.parseColor(xAxisTextColor));
+
+        if (xAxisTextColor.contains("@"))
+            lineChart.getXAxis().setTextColor(getColorResourceByName(xAxisTextColor, context, themePrefix));
+        else
+            lineChart.getXAxis().setTextColor(Color.parseColor(xAxisTextColor));
+
+
         lineChart.getXAxis().setAxisLineWidth(xAxisLineWidth);
         lineChart.getXAxis().setTextSize(xAxisFontSize);
-        lineChart.getXAxis().setAxisLineColor(Color.parseColor(xAxisLineColor));
+
+
+        if (xAxisLineColor.contains("@"))
+            lineChart.getXAxis().setAxisLineColor(getColorResourceByName(xAxisLineColor, context, themePrefix));
+        else
+            lineChart.getXAxis().setAxisLineColor(Color.parseColor(xAxisLineColor));
 
         // Grid
-            //Horizontal
-        lineChart.getAxisLeft().setGridColor(Color.parseColor(horizontalGridLineColor));
+        //Horizontal
+        if (horizontalGridLineColor.contains("@"))
+            lineChart.getAxisLeft().setGridColor(getColorResourceByName(horizontalGridLineColor, context, themePrefix));
+        else
+            lineChart.getAxisLeft().setGridColor(Color.parseColor(horizontalGridLineColor));
+
+
         lineChart.getAxisLeft().setGridLineWidth(horizontalGridLineWidth);
         lineChart.getAxisLeft().setDrawGridLines(drawHorizontalGridLines);
-        lineChart.getAxisRight().setGridColor(Color.parseColor(horizontalGridLineColor));
+
+        if (horizontalGridLineColor.contains("@"))
+            lineChart.getAxisRight().setGridColor(getColorResourceByName(horizontalGridLineColor, context, themePrefix));
+        else
+            lineChart.getAxisRight().setGridColor(Color.parseColor(horizontalGridLineColor));
+
+
         lineChart.getAxisRight().setGridLineWidth(horizontalGridLineWidth);
         lineChart.getAxisRight().setDrawGridLines(drawHorizontalGridLines);
-            //Vertical
-        lineChart.getXAxis().setGridColor(Color.parseColor(verticalGridLineColor));
+
+
+        //Vertical
+        if (verticalGridLineColor.contains("@"))
+            lineChart.getXAxis().setGridColor(getColorResourceByName(verticalGridLineColor, context, themePrefix));
+        else
+            lineChart.getXAxis().setGridColor(Color.parseColor(verticalGridLineColor));
+
+
         lineChart.getXAxis().setGridLineWidth(verticalGridLineWidth);
         lineChart.getXAxis().setDrawGridLines(drawVerticalGridLines);
 
 
         lineChart.getLegend().setEnabled(drawLegend);
-        lineChart.getLegend().setTextColor(Color.parseColor(legendTextColor));
+
+
+        if (legendTextColor.contains("@"))
+            lineChart.getLegend().setTextColor(getColorResourceByName(legendTextColor, context, themePrefix));
+        else
+            lineChart.getLegend().setTextColor(Color.parseColor(legendTextColor));
+
+
         lineChart.getLegend().setTextSize(legendFontSize);
 
         lineChart.getDescription().setEnabled(drawDescription);
-        lineChart.getDescription().setTextColor(Color.parseColor(descriptionColor));
+
+        if (descriptionColor.contains("@"))
+            lineChart.getDescription().setTextColor(getColorResourceByName(descriptionColor, context, themePrefix));
+        else
+            lineChart.getDescription().setTextColor(Color.parseColor(descriptionColor));
+
+
         lineChart.getDescription().setTextSize(descriptionFontSize);
 
         Paint.Align align;
-        switch (descriptionAlignment){
+        switch (descriptionAlignment) {
             case "right":
                 align = Paint.Align.CENTER;
                 break;
@@ -270,35 +395,39 @@ public class ChartStyle {
 
 
         lineChart.setDrawBorders(drawChartBorder);
-        lineChart.setBorderColor(Color.parseColor(borderColor));
 
+        if (borderColor.contains("@"))
+            lineChart.setBorderColor(getColorResourceByName(borderColor, context, themePrefix));
+        else
+            lineChart.setBorderColor(Color.parseColor(borderColor));
 
 
         return lineChart;
     }
 
 
-
-
-
-
-    public class ChartGradient{
+    public class ChartGradient {
         public String[] colors;
         public String orientation;
         public String type;
 
-        public GradientDrawable generateGradient(){
+        public GradientDrawable generateGradient(Context context, String themePrefix) {
             GradientDrawable gradientDrawable = new GradientDrawable();
             int[] gColors = new int[colors.length];
 
-            for(int i=0; i<colors.length;i++)
-                gColors[i] = Color.parseColor(this.colors[i]);
+            for (int i = 0; i < colors.length; i++) {
+                Log.i("COLOR", colors[i]);
+                if (this.colors[i].contains("@"))
+                    gColors[i] = getColorResourceByName(this.colors[i], context, themePrefix);
+                else
+                    gColors[i] = Color.parseColor(this.colors[i]);
+            }
 
             gradientDrawable.setColors(gColors);
 
             gradientDrawable.setOrientation(GradientDrawable.Orientation.valueOf(orientation));
-            int type =GradientDrawable.LINEAR_GRADIENT;
-            switch (this.type){
+            int type = GradientDrawable.LINEAR_GRADIENT;
+            switch (this.type) {
                 case "LINEAR_GRADIENT":
                     type = GradientDrawable.LINEAR_GRADIENT;
                     break;
@@ -306,7 +435,7 @@ public class ChartStyle {
                     type = GradientDrawable.RADIAL_GRADIENT;
                     break;
                 case "SWEEP_GRADIENT":
-                    type =GradientDrawable.SWEEP_GRADIENT;
+                    type = GradientDrawable.SWEEP_GRADIENT;
                     break;
             }
             gradientDrawable.setGradientType(type);
@@ -536,5 +665,7 @@ public class ChartStyle {
     public ChartGradient[] getGradients() {
         return gradients;
     }
+
+
 }
 

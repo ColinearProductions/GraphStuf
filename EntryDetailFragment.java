@@ -50,7 +50,7 @@ public class EntryDetailFragment extends LifecycleFragment implements TextWatche
 
 
     ArrayList<String> unavailableNames;
-    int color = Const.COLOR_SCHEME_GREEN;
+    String color = Const.COLOR_SCHEME_GREEN;
 
     Button createChartButton;
 
@@ -81,14 +81,14 @@ public class EntryDetailFragment extends LifecycleFragment implements TextWatche
             int c;
             if (checkedId == red.getId()) {
                 color = Const.COLOR_SCHEME_RED;
-                c = getResources().getColor(R.color.red_scheme);
+                c = getResources().getColor(R.color.RED_line_color);
             } else if (checkedId == blue.getId()) {
                 color = Const.COLOR_SCHEME_BLUE;
-                c = getResources().getColor(R.color.blue_scheme);
+                c = getResources().getColor(R.color.BLUE_line_color);
 
             } else {
                 color = Const.COLOR_SCHEME_GREEN;
-                c = getResources().getColor(R.color.green_scheme);
+                c = getResources().getColor(R.color.GREEN_line_color);
 
             }
             onceADayCheckbox.setTextColor(c);

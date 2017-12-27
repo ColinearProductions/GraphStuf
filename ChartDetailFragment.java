@@ -3,6 +3,7 @@ package com.colinear.graphstuff;
 
 import android.arch.lifecycle.LifecycleFragment;
 import android.arch.lifecycle.ViewModelProviders;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,7 +57,7 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
 
     int visibleItems = -1;
 
-    FloatingActionButton chartDetailFab;
+    Button addEntryButton;
 
     boolean clickedOnEntityDirectly = false; // if true, dont scroll to the highlighted entry item in the list.
     //todo maybe instead of data point detail, also have a scrollable list of the entries
@@ -68,6 +70,7 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
     private RecyclerView.LayoutManager mLayoutManager;
 
     Spinner intervalSpinner;
+    ChartStyle chartStyle;
 
     public ChartDetailFragment() {
     }
@@ -85,8 +88,8 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         fab = getActivity().findViewById(R.id.button);
         fab.hide();
 
-        chartDetailFab = view.findViewById(R.id.chart_detail_fab);
-        chartDetailFab.setOnClickListener(this);
+        addEntryButton = view.findViewById(R.id.chart_detail_add_button);
+        addEntryButton.setOnClickListener(this);
 
         chartListViewModel = ViewModelProviders.of(getActivity()).get(ChartListViewModel.class);
 
@@ -97,18 +100,21 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         lineChart.setOnChartValueSelectedListener(this);
         titleTextView = view.findViewById(R.id.chart_detail_title_textview);
 
-        view.findViewById(R.id.chart_detail_options_button).setOnClickListener(this);
+        Typeface face = Typeface.createFromAsset(getActivity().getAssets(), "Bariol_Bold.otf");
+
+        titleTextView.setTypeface(face);
+
+        //view.findViewById(R.id.chart_detail_options_button).setOnClickListener(this);
 
         // Interval select intervalSpinner
-       intervalSpinner = view.findViewById(R.id.spinner);
+        intervalSpinner = view.findViewById(R.id.spinner);
 
 
-
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, intervals);
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getActivity(), R.layout.simple_spinner_item, intervals);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         intervalSpinner.setAdapter(dataAdapter);
 
-
+        chartStyle = ChartStyle.fromJson("chartDetailStyle.json", this.getActivity());
 
         mRecyclerView = view.findViewById(R.id.chart_detail_entry_recyclerview);
         mRecyclerView.setHasFixedSize(true);
@@ -118,7 +124,7 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         // specify an adapter (see also next example)
-        mAdapter = new EntryListAdapter(getActivity(), this);
+        mAdapter = new EntryListAdapter(getActivity(), this, chartStyle);
         mRecyclerView.setAdapter(mAdapter);
 
     }
@@ -128,9 +134,9 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         Log.i("chart", chart.toString());
         this.chartEntity = chart;
         titleTextView.setText(chart.getTitle());
+        mAdapter.setTheme(chart.getColorScheme());
         chartListViewModel.getEntriesByChart(chart.getTitle()).observe(this, this::onEntriesUpdated);
         intervalSpinner.setOnItemSelectedListener(this);
-        mAdapter.setColorScheme(chartEntity.getColorScheme());
 
 
     }
@@ -143,39 +149,37 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         mAdapter.setEntries(entries);
 
 
-
     }
 
     private void redrawChartView() {
 
 
         ArrayList<Entry> mpEntries = new ArrayList<>();
+        Long[] dateMapping = null;
+        if (chartEntity.getEntries().size() <= 0) {
+            dateMapping = new Long[2];
+            mpEntries.add(new Entry(0, 1));
+            mpEntries.add(new Entry(1, 1));
+            dateMapping[0] = 0L;
+            dateMapping[1] = 0L;
+        } else {
 
-        if (chartEntity.getEntries().size() <= 0)
-        {
-            mpEntries.add(new Entry(0,1));
-            mpEntries.add(new Entry(1,1));
+            //mapping indexes to timestamps
+            dateMapping = new Long[chartEntity.getEntries().size()];
+            for (EntryEntity e : chartEntity.getEntries()) {
+                dateMapping[e.getIndex()] = e.getTimestamp();
+                mpEntries.add(new Entry(e.getIndex(), (float) e.getValue(), e));
+            }
         }
 
-        for (EntryEntity e : chartEntity.getEntries())
-            mpEntries.add(new Entry(e.getIndex(), (float) e.getValue(), e));
-
-        ChartStyle chartStyle = null;
-        if(chartEntity.getColorScheme() == Const.COLOR_SCHEME_GREEN)
-            chartStyle = ChartStyle.fromJson("chartDetailStyleGreen.json", this.getActivity());
-        else if(chartEntity.getColorScheme() == Const.COLOR_SCHEME_BLUE)
-            chartStyle = ChartStyle.fromJson("chartDetailStyleBlue.json", this.getActivity());
-        else if(chartEntity.getColorScheme() == Const.COLOR_SCHEME_RED)
-            chartStyle = ChartStyle.fromJson("chartDetailStyleRed.json", this.getActivity());
-        else{
-            chartStyle = ChartStyle.fromJson("chartDetailStyleGreen.json", this.getActivity());
-        }
 
         LineDataSet dataSet = new LineDataSet(mpEntries, "Label"); //apply styling to it
-        chartStyle.applyStyle(dataSet);
+        chartStyle.applyStyle(dataSet, getContext(), chartEntity.getColorScheme());
         LineData lineData = new LineData(dataSet);
         lineChart.setData(lineData); // apply styling to line chart
-        chartStyle.applyStyle(lineChart);
+        chartStyle.applyStyle(lineChart, getContext(), chartEntity.getColorScheme());
+
+        lineChart.getXAxis().setValueFormatter(new XAxisDateFormatter(dateMapping));
 
         applyChartOptions();
 
@@ -221,22 +225,23 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
     @Override
     public void onClick(View v) {
 
-        if(v.getId()==R.id.chart_detail_fab){
+        if (v.getId() == R.id.chart_detail_add_button) {
 
 
             new MaterialDialog.Builder(getActivity())
                     .title("Value")
                     .content("Enter the value")
-                    .inputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL )
+                    .inputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL)
                     .input("0", "", new MaterialDialog.InputCallback() {
                         @Override
                         public void onInput(MaterialDialog dialog, CharSequence input) {
-                            chartListViewModel.addEntry(new EntryEntity("comment",Double.parseDouble(input.toString()),chartEntity.getTitle(),chartEntity.getLastIndex()));
+                            chartListViewModel.addEntry(new EntryEntity("comment", Double.parseDouble(input.toString()), chartEntity.getTitle(), chartEntity.getLastIndex()));
                         }
                     }).show();
 
             return;
         }
+        /*
 
         ArrayList<String> options = new ArrayList();
         options.add("Lock Zoom");
@@ -266,17 +271,17 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
                     })
                     .positiveText("Apply")
                     .show();
-        }
+        } */
     }
 
 
     public void applyChartOptions() {
-        Log.i("Options","Updated");
+        Log.i("Options", "Updated");
         lineChart.setPinchZoom(!lockZoom);
         lineChart.setDoubleTapToZoomEnabled(!lockZoom);
         lineChart.setScaleEnabled(!lockZoom);
 
-        int itemsCount=lineChart.getLineData().getDataSets().get(0).getEntryCount();
+        int itemsCount = lineChart.getLineData().getDataSets().get(0).getEntryCount();
         lineChart.setVisibleXRangeMaximum(visibleItems);
         lineChart.moveViewToX(itemsCount - visibleItems);
 
@@ -288,20 +293,17 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
 
     @Override
     public void onValueSelected(Entry e, Highlight h) {
-        if(e.getData() == null)
+        if (e.getData() == null)
             return;
-
-
-
 
 
         EntryEntity entryEntity = (EntryEntity) e.getData();
         mAdapter.setHighlightedIndex(entryEntity.getIndex());
 
-        if(!clickedOnEntityDirectly)
+        if (!clickedOnEntityDirectly)
             mLayoutManager.scrollToPosition(chartEntity.getEntries().size() - entryEntity.getIndex() - 1);
         else
-            clickedOnEntityDirectly=false;
+            clickedOnEntityDirectly = false;
 
         Log.i("SelectedEntry", entryEntity.toString());
 
@@ -318,9 +320,9 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
 
     @Override
     public void onEntryClicked(int entryIndex) {
-        Log.i("LOG","idx: "+entryIndex);
+        Log.i("LOG", "idx: " + entryIndex);
         clickedOnEntityDirectly = true;
-        lineChart.highlightValue((float)entryIndex,0);
+        lineChart.highlightValue((float) entryIndex, 0);
 
     }
 }
