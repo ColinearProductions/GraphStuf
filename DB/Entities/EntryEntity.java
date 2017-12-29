@@ -10,7 +10,7 @@ import java.util.Date;
 import static android.arch.persistence.room.ForeignKey.CASCADE;
 
 
-@Entity(tableName = "entries", foreignKeys = @ForeignKey(entity = ChartEntity.class, parentColumns = "title", childColumns = "chartTitle", onUpdate = CASCADE))
+@Entity(tableName = "entries")
 public class EntryEntity {
 
     @PrimaryKey(autoGenerate = true)

@@ -16,7 +16,11 @@ public class XAxisDateFormatter implements IAxisValueFormatter {
 
 
     Long[] dateMapping;
-    public XAxisDateFormatter( Long[] dateMapping) {
+    public XAxisDateFormatter() {
+
+    }
+
+    public void setDateMapping(Long[] dateMapping){
         this.dateMapping = dateMapping;
     }
 

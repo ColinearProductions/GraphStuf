@@ -30,6 +30,7 @@ public class ChartListViewModel extends AndroidViewModel {
 
 
 
+
     public ChartListViewModel(Application application) {
         super(application);
         ((MyApp) application).getChartListComponent().inject(this);
@@ -90,6 +91,8 @@ public class ChartListViewModel extends AndroidViewModel {
         this.currentChartTitle = null;
     }
 
-
+    public Single<EntryEntity[]> getExtremeEntries(String chartTitle){
+        return chartRepository.getExtremeEntries(chartTitle);
+    }
 
 }

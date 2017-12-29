@@ -5,6 +5,8 @@ import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -26,6 +28,7 @@ public class ChartEntity {
         this.colorScheme = colorScheme;
         this.onlyOneADay = onlyOneADay;
     }
+
 
     public String getTitle() {
         return title;
@@ -77,6 +80,8 @@ public class ChartEntity {
                 ", entries=" + entries +
                 '}';
     }
+
+
 }
 
 

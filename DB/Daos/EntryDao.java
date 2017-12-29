@@ -27,8 +27,18 @@ public interface EntryDao {
     LiveData<List<EntryEntity>> getEntriesByChart(String chartTitle);
 
 
-    @Query("SELECT * FROM entries WHERE id = :entryId")
-    EntryEntity getEntryById(int entryId);
+
+
+    @Query("SELECT * FROM entries WHERE chartTitle = :chartTitle ORDER BY timestamp DESC LIMIT 1 ")
+    EntryEntity getLastEntryByChart(String chartTitle);
+
+    @Query("SELECT * FROM entries WHERE chartTitle = :chartTitle ORDER BY value LIMIT 1")
+    EntryEntity getMinValueByChart(String chartTitle);
+
+    @Query("SELECT * FROM entries WHERE chartTitle = :chartTitle ORDER BY value DESC LIMIT 1")
+    EntryEntity getMaxValueByChart(String chartTitle);
+
+
 
 
 

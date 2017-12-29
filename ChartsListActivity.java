@@ -61,6 +61,7 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
         });
 
 
+
         chartListViewModel.getChartsLiveData().observe(this,entries -> onChartsLoaded(entries));
 
 
@@ -69,7 +70,9 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
                 .subscribe(this::onChartsLoaded);   */
 
 
-      //  generateDummyData();
+      // generateDummyData();
+
+       // onChartLongClicked(null, -1);
     }
 
 
@@ -144,7 +147,8 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
     @Override
     public void onChartLongClicked(String chartTitle, int lastIndex) {
 
-        /*
+        chartListViewModel.setCurrentChart(chartTitle);
+
         String FRAGMENT_NAME ="EntryDetailFragment";
 
         Fragment entryDetailFragment =  new EntryDetailFragment();
@@ -157,10 +161,10 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
         fragmentTransaction.addToBackStack(FRAGMENT_NAME);
 
         fragmentTransaction.commit();
-        */
 
 
 
+/*
         new MaterialDialog.Builder(this)
                 .title("Value")
                 .content("Enter the value")
@@ -171,7 +175,7 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
 
                         chartListViewModel.addEntry(new EntryEntity("comment",Double.parseDouble(input.toString()),chartTitle,lastIndex));
                     }
-                }).show();
+                }).show(); */
 
 
 

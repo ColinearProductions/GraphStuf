@@ -1,30 +1,34 @@
 package com.colinear.graphstuff;
 
 
-import android.app.Activity;
+import android.animation.ArgbEvaluator;
 import android.arch.lifecycle.LifecycleFragment;
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.CompoundButtonCompat;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.colinear.graphstuff.DB.Entities.ChartEntity;
+import com.colinear.graphstuff.DB.Entities.EntryEntity;
 
 import java.util.ArrayList;
 
@@ -35,26 +39,39 @@ import io.reactivex.schedulers.Schedulers;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class EntryDetailFragment extends LifecycleFragment implements TextWatcher {
+public class EntryDetailFragment extends LifecycleFragment {
 
     FloatingActionButton fab;
 
     ChartListViewModel chartListViewModel;
 
-    EditText chartTitleEditText;
-    CheckBox onceADayCheckbox;
-    RadioGroup colorSchemeRadioGroup;
-    RadioButton red;
-    RadioButton green;
-    RadioButton blue;
+    ArrayList<String> unavailableNames = new ArrayList<>();
+    SeekBar seekBar;
+    EditText valueText;
 
 
-    ArrayList<String> unavailableNames;
-    String color = Const.COLOR_SCHEME_GREEN;
+    String color1 = "@*line_color";
+    String color2 = "@*gradient_end";
+    String theme = "GREEN";
+    int c1;
+    int c2;
 
-    Button createChartButton;
+    double last = 0;
+    double min = 0;
+    double max = 0;
+
+    double distribution = 100;
+
+
+    ChartEntity chartEntity;
+
+    Button addEntryButton;
+    CheckBox useSuggestionCheckbox;
+    TextView commentText;
+
 
     public EntryDetailFragment() {
+
     }
 
     @Override
@@ -64,66 +81,118 @@ public class EntryDetailFragment extends LifecycleFragment implements TextWatche
 
         fab = getActivity().findViewById(R.id.button);
         fab.hide();
-        chartListViewModel = ViewModelProviders.of(this).get(ChartListViewModel.class);
+        chartListViewModel = ViewModelProviders.of(this.getActivity()).get(ChartListViewModel.class);
 
-        chartTitleEditText = getActivity().findViewById(R.id.chart_title_edit_text);
-        chartTitleEditText.addTextChangedListener(this);
+        Log.i("AMXKASDA", chartListViewModel.getCurrentChartTitle());
+        chartListViewModel.getChartByTitle(chartListViewModel.getCurrentChartTitle()).observe(this, new Observer<ChartEntity>() {
+            @Override
+            public void onChanged(@Nullable ChartEntity chartEntity) {
 
-        onceADayCheckbox = getActivity().findViewById(R.id.once_a_day_checkbox);
-        colorSchemeRadioGroup = getActivity().findViewById(R.id.color_scheme_radio_group);
-        red = getActivity().findViewById(R.id.color_scheme_red);
-        green = getActivity().findViewById(R.id.color_scheme_green);
-        blue = getActivity().findViewById(R.id.color_scheme_blue);
-        createChartButton = view.findViewById(R.id.create_chart_button);
-
-
-        colorSchemeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            int c;
-            if (checkedId == red.getId()) {
-                color = Const.COLOR_SCHEME_RED;
-                c = getResources().getColor(R.color.RED_line_color);
-            } else if (checkedId == blue.getId()) {
-                color = Const.COLOR_SCHEME_BLUE;
-                c = getResources().getColor(R.color.BLUE_line_color);
-
-            } else {
-                color = Const.COLOR_SCHEME_GREEN;
-                c = getResources().getColor(R.color.GREEN_line_color);
+                chartListViewModel.getExtremeEntries(chartEntity.getTitle()).observeOn(AndroidSchedulers.mainThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(Schedulers.io())
+                        .subscribe(entries -> onChartLoaded(chartEntity, entries));
 
             }
-            onceADayCheckbox.setTextColor(c);
-            setCheckBoxColor(onceADayCheckbox, c, c);
-            chartTitleEditText.setTextColor(c);
-
-            ColorStateList colorStateList = ColorStateList.valueOf(c);
-            ViewCompat.setBackgroundTintList(chartTitleEditText, colorStateList);
-
-            createChartButton.setBackgroundColor(c);
         });
 
 
-        createChartButton.setEnabled(false);
-        createChartButton.setOnClickListener(v -> {
+        seekBar = view.findViewById(R.id.seekBar);
+        valueText = view.findViewById(R.id.entry_value_edittext);
 
-            String chartTitle = chartTitleEditText.getText().toString();
-            chartListViewModel.addChart(new ChartEntity(chartTitle, color, onceADayCheckbox.isChecked()));
-            hideKeyboard(getActivity());
-            getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
+        addEntryButton = view.findViewById(R.id.add_entry_button);
+        useSuggestionCheckbox = view.findViewById(R.id.suggested_values_checkbox);
+        commentText = view.findViewById(R.id.comment_text_view);
 
+
+
+
+
+        Typeface face = Typeface.createFromAsset(getActivity().getAssets(), "Bariol_Bold.otf");
+        valueText.setTypeface(face);
+
+
+    }
+
+    private void onChartLoaded(ChartEntity chartEntity, EntryEntity[] extremities) {
+        this.chartEntity = chartEntity;
+
+        Log.i("VALUES", extremities.length + "");
+
+
+        if (extremities[0] != null) {
+            last = extremities[0].getValue();
+            min = extremities[1].getValue();
+            max = extremities[2].getValue();
+        }
+
+
+        distribution = (int) (max - min);
+
+        seekBar.setProgress(50);
+
+
+        Log.i("VALUES", last + " : " + min + " : " + max + " : " + distribution);
+
+
+        valueText.setText("" + last);
+
+
+        theme = this.chartEntity.getColorScheme();
+        c1 = ChartStyle.getColorResourceByName(color1, getActivity(), theme);
+        c2 = ChartStyle.getColorResourceByName(color2, getActivity(), theme);
+
+        Bitmap gradientBitmap = Util.applyGradient(R.drawable.fingerprint_glow, c1, c2, getActivity());
+        gradientBitmap = Bitmap.createScaledBitmap(gradientBitmap, 300, 300, false);
+        seekBar.setThumb(new BitmapDrawable(getResources(), gradientBitmap));
+
+        seekBar.getProgressDrawable().setColorFilter(c2, PorterDuff.Mode.MULTIPLY);
+
+
+        ColorStateList colorStateList = ColorStateList.valueOf(Color.TRANSPARENT);
+        ViewCompat.setBackgroundTintList(valueText, colorStateList);
+
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                int color = (int) new ArgbEvaluator().evaluate((float) progress / seekBar.getMax(), c2, c1);
+                valueText.setTextColor(color);
+                valueText.setText("" + getValue(progress));
+
+                seekBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
         });
 
-        unavailableNames = new ArrayList<>();
+
+        int color = ChartStyle.getColorResourceByName("@*line_color",getActivity(),chartEntity.getColorScheme());
+        commentText.setTextColor(color);
+
+        addEntryButton.setBackgroundColor(color);
+        addEntryButton.setTextColor(Color.WHITE);
+
+        valueText.setTextColor(color);
+
+        setCheckBoxColor(useSuggestionCheckbox, color, color);
+        useSuggestionCheckbox.setTextColor(color);
+
+    }
 
 
-        chartListViewModel.getCharts().observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(charts -> {
-                    for (ChartEntity entity : charts)
-                        unavailableNames.add(entity.getTitle());
-                    afterTextChanged(chartTitleEditText.getText());
-
-                });
-
+    public double getValue(int progress) {
+        Log.i("VALUES", progress+"");
+        return (int) ((min-distribution)+(distribution * 4) * ((double)progress / seekBar.getMax()));
     }
 
 
@@ -139,39 +208,11 @@ public class EntryDetailFragment extends LifecycleFragment implements TextWatche
         return inflater.inflate(R.layout.fragment_entity_detail, container, false);
     }
 
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-    }
-
-    @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-    }
-
-    @Override
-    public void afterTextChanged(Editable s) {
-        Log.i("EditText", s.toString());
-        createChartButton.setEnabled(!unavailableNames.contains(s.toString()));
-
-    }
-
-    public static void hideKeyboard(Activity activity) {
-        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-        //Find the currently focused view, so we can grab the correct window token from it.
-        View view = activity.getCurrentFocus();
-        //If no view currently has focus, create a new one, just so we can grab a window token from it
-        if (view == null) {
-            view = new View(activity);
-        }
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-    }
-
-
     public void setCheckBoxColor(CheckBox checkBox, int checkedColor, int uncheckedColor) {
         int states[][] = {{android.R.attr.state_checked}, {}};
         int colors[] = {checkedColor, uncheckedColor};
         CompoundButtonCompat.setButtonTintList(checkBox, new
                 ColorStateList(states, colors));
     }
+
 }

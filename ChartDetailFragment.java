@@ -69,6 +69,8 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
     private EntryListAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
 
+    private XAxisDateFormatter dateFormatter;
+
     Spinner intervalSpinner;
     ChartStyle chartStyle;
 
@@ -127,6 +129,7 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         mAdapter = new EntryListAdapter(getActivity(), this, chartStyle);
         mRecyclerView.setAdapter(mAdapter);
 
+        dateFormatter = new XAxisDateFormatter();
     }
 
 
@@ -171,6 +174,7 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
                 mpEntries.add(new Entry(e.getIndex(), (float) e.getValue(), e));
             }
         }
+        dateFormatter.setDateMapping(dateMapping);
 
 
         LineDataSet dataSet = new LineDataSet(mpEntries, "Label"); //apply styling to it
@@ -179,7 +183,7 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         lineChart.setData(lineData); // apply styling to line chart
         chartStyle.applyStyle(lineChart, getContext(), chartEntity.getColorScheme());
 
-        lineChart.getXAxis().setValueFormatter(new XAxisDateFormatter(dateMapping));
+        lineChart.getXAxis().setValueFormatter(dateFormatter);
 
         applyChartOptions();
 
@@ -190,7 +194,6 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
     @Override
     public void onPause() {
         super.onPause();
-        chartListViewModel.clearCurrentChart();
         fab.show();
 
     }
@@ -241,37 +244,6 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
 
             return;
         }
-        /*
-
-        ArrayList<String> options = new ArrayList();
-        options.add("Lock Zoom");
-        options.add("Show Values");
-
-        ArrayList<Integer> checkedState = new ArrayList<>();
-
-        if(lockZoom)
-            checkedState.add(Const.LOCK_ZOOM);
-        if(showValues)
-            checkedState.add(Const.SHOW_VALUES);
-
-        Integer[] checkedStateArray = checkedState.toArray(new Integer[checkedState.size()]);
-
-        if (v.getId() == R.id.chart_detail_options_button) {
-            new MaterialDialog.Builder(getActivity())
-                    .title("Options")
-                    .items(options)
-                    .itemsCallbackMultiChoice(checkedStateArray, new MaterialDialog.ListCallbackMultiChoice() {
-                        @Override
-                        public boolean onSelection(MaterialDialog dialog, Integer[] which, CharSequence[] text) {
-                            lockZoom =Arrays.asList(which).contains(Const.LOCK_ZOOM);
-                            showValues = Arrays.asList(which).contains(Const.SHOW_VALUES);
-                            applyChartOptions();
-                            return true;
-                        }
-                    })
-                    .positiveText("Apply")
-                    .show();
-        } */
     }
 
 
@@ -311,16 +283,11 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
     }
 
     @Override
-    public void onNothingSelected() {
-
-        //todo add FAB to chart detail fragment to add entry only if that day there have not been an entry added
-        //todo mark days that have been entered automatically
-    }
+    public void onNothingSelected() {}
 
 
     @Override
     public void onEntryClicked(int entryIndex) {
-        Log.i("LOG", "idx: " + entryIndex);
         clickedOnEntityDirectly = true;
         lineChart.highlightValue((float) entryIndex, 0);
 

@@ -78,6 +78,23 @@ public class ChartRepositoryImpl implements ChartRepository {
     }
 
 
+
+    @Override
+    public Single<EntryEntity[]> getExtremeEntries(String chartTitle) {
+        return Single.fromCallable(()->{
+            EntryEntity[] entries = new EntryEntity[3];
+
+            entries[0] = chartDatabase.entryDao().getLastEntryByChart(chartTitle);
+            entries[1] = chartDatabase.entryDao().getMinValueByChart(chartTitle);
+            entries[2] = chartDatabase.entryDao().getMaxValueByChart(chartTitle);
+            return entries;
+        });
+
+
+
+    }
+
+
     @Override
     public Single<List<ChartEntity>> getCharts() {
         return Single.fromCallable(() -> {

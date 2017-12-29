@@ -23,7 +23,14 @@ public interface ChartRepository {
     LiveData<List<EntryEntity>> getEntries();
     LiveData<List<EntryEntity>> getEntriesByChart(String chartTitle);
 
-
     LiveData<ChartEntity> getChartLiveData(String title);
+
+
+
+    Single<EntryEntity[]> getExtremeEntries(String chartTitle);
+
+
+
+
 
 }
