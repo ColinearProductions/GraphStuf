@@ -121,7 +121,7 @@ public class EntryDetailFragment extends LifecycleFragment {
 
         addEntryButton.setOnClickListener(v -> {
 
-            chartListViewModel.addEntryWithObservable(new EntryEntity(commentText.getText().toString(), currentValue, chartListViewModel.getCurrentChartTitle(), chartListViewModel.getCurrentChartLastIndex())).observeOn(AndroidSchedulers.mainThread())
+            chartListViewModel.addEntryWithObservable(new EntryEntity(commentText.getText().toString(), (int) currentValue, chartListViewModel.getCurrentChartTitle(), chartListViewModel.getCurrentChartLastIndex())).observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
                     .subscribe(result -> {
                         getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
@@ -145,7 +145,7 @@ public class EntryDetailFragment extends LifecycleFragment {
         this.chartEntity = chartEntity;
         this.extremities = extremities;
 
-        if(extremities[0] == null)
+        if (extremities[0] == null)
             currentValue = 15;
         else
             currentValue = extremities[0].getValue();
@@ -153,12 +153,6 @@ public class EntryDetailFragment extends LifecycleFragment {
 
         seekBar.setMax(300);
         updateValues(true);
-
-
-
-
-
-
 
 
         valueText.setText("" + last);
@@ -183,7 +177,7 @@ public class EntryDetailFragment extends LifecycleFragment {
                 valueText.setTextColor(color);
                 updateCurrentValue(progress);
 
-                valueText.setText("" + (int)currentValue);
+                valueText.setText("" + (int) currentValue);
 
                 seekBar.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
             }
@@ -217,45 +211,49 @@ public class EntryDetailFragment extends LifecycleFragment {
 
 
     public void updateCurrentValue(int progress) {
-        Log.i("VALUES", progress + "");
 
-        currentValue =(min+ max* ((double) progress / seekBar.getMax()));
 
+        currentValue =  min + max * ((double) progress / seekBar.getMax());
+
+        Log.i("VALUES", progress + " - " + currentValue);
 
     }
 
-    public void updateValues(boolean suggested){
+    public void updateValues(boolean suggested) {
 
 
-
-        if(suggested) {
+        if (suggested) {
             if (extremities[0] != null) {
                 last = extremities[0].getValue();
                 min = extremities[1].getValue();
                 max = extremities[2].getValue();
 
 
-
-            }else{
-                last=50;
-                min=0;
-                max =100;
+            } else {
+                last = 50;
+                min = 0;
+                max = 100;
 
             }
 
 
-
-           distribution = max-min;
-
+            distribution = max - min;
 
 
-            min = last-distribution*.5;
-            if(min<0)
+            min = last - distribution;
+
+            if (distribution < 5)
+                min = last - distribution * 3;
+
+            if (distribution < 1)
+                min = last * .5;
+
+            if (min < 0)
                 min = 0;
 
-            max = last + distribution*.3;
+            max = last + distribution * .3;
 
-        }else{
+        } else {
             if (extremities[0] != null) {
                 last = extremities[0].getValue();
                 min = extremities[1].getValue();
@@ -264,20 +262,25 @@ public class EntryDetailFragment extends LifecycleFragment {
                 max = max + last;
                 min = 0;
 
-            }else{
-                last=150;
-                min=0;
-                max =300;
+            } else {
+                last = 150;
+                min = 0;
+                max = 300;
             }
         }
 
-//todo check this shit
 
-        Log.i("VALUES",""+currentValue/max);
-        Log.i("VALUES",""+seekBar.getMax());
-        Log.i("VALUES",""+currentValue/max*(double)(seekBar.getMax()));
-        Log.i("VALUES",""+(int)(currentValue/max*(double)(seekBar.getMax())));
-        seekBar.setProgress( (int)(currentValue/max*(double)(seekBar.getMax())));
+        if (currentValue > max)
+            currentValue = max;
+
+        Log.i("VALUES", "" + currentValue / (max));
+        Log.i("VALUES", "" + seekBar.getMax());
+        Log.i("VALUES", "" + currentValue / (max) * (double) (seekBar.getMax()));
+        Log.i("VALUES", "" + (int) (currentValue / max * (double) (seekBar.getMax())));
+        seekBar.setProgress((int) (((currentValue-min) / (max)) * (double) (seekBar.getMax())));
+
+
+        // (max+min) * ((double) progress / seekBar.getMax())
 
         Log.i("VALUES", currentValue + " : " + min + " : " + max + " : " + distribution);
 

@@ -14,7 +14,7 @@ import com.colinear.graphstuff.DB.Entities.EntryEntity;
  */
 
 
-@Database(entities = {EntryEntity.class, ChartEntity.class}, version = 12)
+@Database(entities = {EntryEntity.class, ChartEntity.class}, version = 2)
 @TypeConverters({DateConverter.class})
 public abstract class ChartDatabase  extends RoomDatabase{
 

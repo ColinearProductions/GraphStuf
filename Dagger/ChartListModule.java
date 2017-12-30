@@ -38,7 +38,7 @@ public class ChartListModule {
     @Provides
     @Singleton
     ChartDatabase providesChartDatabase(Context context){
-        return Room.databaseBuilder(context.getApplicationContext(), ChartDatabase.class,"charz").build();
+        return Room.databaseBuilder(context.getApplicationContext(), ChartDatabase.class,"provis").build();
       //  return Room.inMemoryDatabaseBuilder(context.getApplicationContext(), ChartDatabase.class).build();
     }
 
