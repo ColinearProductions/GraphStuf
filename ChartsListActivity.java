@@ -128,7 +128,7 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
     public void onChartClicked(String chartTitle) {
         Log.i("Chart callback","Chart clicked "+ chartTitle);
 
-        chartListViewModel.setCurrentChart(chartTitle);
+        chartListViewModel.setCurrentChart(chartTitle,0);
 
         String FRAGMENT_NAME ="ChartDetailFragment";
 
@@ -147,7 +147,7 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
     @Override
     public void onChartLongClicked(String chartTitle, int lastIndex) {
 
-        chartListViewModel.setCurrentChart(chartTitle);
+        chartListViewModel.setCurrentChart(chartTitle, lastIndex);
 
         String FRAGMENT_NAME ="EntryDetailFragment";
 

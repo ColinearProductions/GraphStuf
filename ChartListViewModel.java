@@ -26,6 +26,7 @@ public class ChartListViewModel extends AndroidViewModel {
     ChartRepository chartRepository;
 
     String currentChartTitle = null;
+    int lastIndex = 0;
 
 
 
@@ -57,6 +58,13 @@ public class ChartListViewModel extends AndroidViewModel {
                 .subscribe(result -> Log.i("ChartListViewModel", "Add entries Result: " + result));
     }
 
+    Single<Boolean> addEntryWithObservable(EntryEntity entryEntities) {
+
+       return chartRepository.addEntry(entryEntities);
+    }
+
+
+
 
 
 
@@ -78,13 +86,19 @@ public class ChartListViewModel extends AndroidViewModel {
     }
 
 
-    public void setCurrentChart(String chartTitle){
+    public void setCurrentChart(String chartTitle, int lastIndex){
         Log.i("chart", "set current chart: " +  chartTitle);
         this.currentChartTitle = chartTitle;
+        this.lastIndex = lastIndex;
     }
 
     public String getCurrentChartTitle(){
         return this.currentChartTitle;
+    }
+
+
+    public int getCurrentChartLastIndex(){
+        return this.lastIndex;
     }
 
     public void clearCurrentChart(){

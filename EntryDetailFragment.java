@@ -12,21 +12,26 @@ import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.CompoundButtonCompat;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.colinear.graphstuff.DB.Entities.ChartEntity;
 import com.colinear.graphstuff.DB.Entities.EntryEntity;
 
@@ -45,7 +50,6 @@ public class EntryDetailFragment extends LifecycleFragment {
 
     ChartListViewModel chartListViewModel;
 
-    ArrayList<String> unavailableNames = new ArrayList<>();
     SeekBar seekBar;
     EditText valueText;
 
@@ -69,6 +73,9 @@ public class EntryDetailFragment extends LifecycleFragment {
     CheckBox useSuggestionCheckbox;
     TextView commentText;
 
+    TextView commentLabel;
+
+    EntryEntity[] extremities;
 
     public EntryDetailFragment() {
 
@@ -81,20 +88,13 @@ public class EntryDetailFragment extends LifecycleFragment {
 
         fab = getActivity().findViewById(R.id.button);
         fab.hide();
+
         chartListViewModel = ViewModelProviders.of(this.getActivity()).get(ChartListViewModel.class);
 
-        Log.i("AMXKASDA", chartListViewModel.getCurrentChartTitle());
-        chartListViewModel.getChartByTitle(chartListViewModel.getCurrentChartTitle()).observe(this, new Observer<ChartEntity>() {
-            @Override
-            public void onChanged(@Nullable ChartEntity chartEntity) {
-
-                chartListViewModel.getExtremeEntries(chartEntity.getTitle()).observeOn(AndroidSchedulers.mainThread())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeOn(Schedulers.io())
-                        .subscribe(entries -> onChartLoaded(chartEntity, entries));
-
-            }
-        });
+        chartListViewModel.getChartByTitle(chartListViewModel.getCurrentChartTitle()).observe(this, chartEntity -> chartListViewModel.getExtremeEntries(chartEntity.getTitle()).observeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(entries -> onChartLoaded(chartEntity, entries)));
 
 
         seekBar = view.findViewById(R.id.seekBar);
@@ -103,33 +103,97 @@ public class EntryDetailFragment extends LifecycleFragment {
         addEntryButton = view.findViewById(R.id.add_entry_button);
         useSuggestionCheckbox = view.findViewById(R.id.suggested_values_checkbox);
         commentText = view.findViewById(R.id.comment_text_view);
+        commentLabel = view.findViewById(R.id.comment_label);
+
+        View.OnClickListener onCommentClickedListener = v -> {
+            String prefill = commentText.getText().toString();
+            if (prefill.contains("Touch to add a comment"))
+                prefill = "";
+            new MaterialDialog.Builder(getActivity())
+                    .title("Add a comment")
+                    .content(prefill)
+                    .positiveText("Apply")
+                    .negativeText("Cancel")
+                    .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
+                    .input("Comment", prefill, (dialog, input) -> {
+                        if (input.length() >= 1)
+                            commentText.setText(input);
+                    }).show();
+        };
+
+        commentText.setOnClickListener(onCommentClickedListener);
+        commentLabel.setOnClickListener(onCommentClickedListener);
+
+        addEntryButton.setOnClickListener(v -> {
+            chartListViewModel.addEntryWithObservable(new EntryEntity(commentText.getText().toString(), getValue(seekBar.getProgress()), chartListViewModel.getCurrentChartTitle(), chartListViewModel.getCurrentChartLastIndex())).observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(result -> {
+                        getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
+                    });
+        });
 
 
+        useSuggestionCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                if (extremities[0] != null) {
+                    last = extremities[0].getValue();
+                    min = extremities[1].getValue();
+                    max = extremities[2].getValue();
+                    max = max + max*.25;
+                } else {
+                    last = 0;
+                    min = 0;
+                    max = 0;
+                }
+            } else {
+                min = 0;
+                if (extremities[0] != null)
+                    last = extremities[0].getValue();
+
+                if (distribution < 100) {
+                    max = distribution * 5;
+                } else {
+                    max = distribution * 2;
+                }
+
+            }
+            if (max < 10) {
+                max = min + 100;
+            }
 
 
+            distribution = (int) (max - min);
+
+
+            seekBar.setProgress(50);
+        });
 
         Typeface face = Typeface.createFromAsset(getActivity().getAssets(), "Bariol_Bold.otf");
         valueText.setTypeface(face);
-
+        commentLabel.setTypeface(face);
 
     }
 
     private void onChartLoaded(ChartEntity chartEntity, EntryEntity[] extremities) {
         this.chartEntity = chartEntity;
-
-        Log.i("VALUES", extremities.length + "");
-
+        this.extremities = extremities;
 
         if (extremities[0] != null) {
             last = extremities[0].getValue();
             min = extremities[1].getValue();
             max = extremities[2].getValue();
+            max = max  + max*.25;
         }
 
 
+        if (max < 10) {
+            max = min + 100;
+        }
+
         distribution = (int) (max - min);
 
-        seekBar.setProgress(50);
+        seekBar.setMax(300);
+        seekBar.setProgress(seekBar.getMax() / 2);
 
 
         Log.i("VALUES", last + " : " + min + " : " + max + " : " + distribution);
@@ -145,13 +209,9 @@ public class EntryDetailFragment extends LifecycleFragment {
         Bitmap gradientBitmap = Util.applyGradient(R.drawable.fingerprint_glow, c1, c2, getActivity());
         gradientBitmap = Bitmap.createScaledBitmap(gradientBitmap, 300, 300, false);
         seekBar.setThumb(new BitmapDrawable(getResources(), gradientBitmap));
-
         seekBar.getProgressDrawable().setColorFilter(c2, PorterDuff.Mode.MULTIPLY);
-
-
         ColorStateList colorStateList = ColorStateList.valueOf(Color.TRANSPARENT);
         ViewCompat.setBackgroundTintList(valueText, colorStateList);
-
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -176,8 +236,10 @@ public class EntryDetailFragment extends LifecycleFragment {
         });
 
 
-        int color = ChartStyle.getColorResourceByName("@*line_color",getActivity(),chartEntity.getColorScheme());
+        int color = ChartStyle.getColorResourceByName("@*line_color", getActivity(), chartEntity.getColorScheme());
         commentText.setTextColor(color);
+        commentLabel.setTextColor(color);
+
 
         addEntryButton.setBackgroundColor(color);
         addEntryButton.setTextColor(Color.WHITE);
@@ -191,8 +253,16 @@ public class EntryDetailFragment extends LifecycleFragment {
 
 
     public double getValue(int progress) {
-        Log.i("VALUES", progress+"");
-        return (int) ((min-distribution)+(distribution * 4) * ((double)progress / seekBar.getMax()));
+        Log.i("VALUES", progress + "");
+
+
+        int distributionMultiplier =2;
+        if(distribution>400){
+            distributionMultiplier=1;
+        }
+
+
+        return (int) ((min-min*.2)+ (distribution * distributionMultiplier) * ((double) progress / seekBar.getMax()));
     }
 
 
