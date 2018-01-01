@@ -3,6 +3,7 @@ package com.colinear.graphstuff.DB.Entities;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 
 import java.util.Date;
@@ -15,7 +16,7 @@ public class EntryEntity {
 
     @PrimaryKey(autoGenerate = true)
     int id;
-    int index;
+
     Long timestamp; //todo right now it's just an int index, change later
     String comment;
     double value;
@@ -23,15 +24,19 @@ public class EntryEntity {
     @ColumnInfo(name = "chartTitle")
     String chartTitle;
 
+
+    @Ignore
+    int index;
+
     //todo all entries should have a timestamp and and index
 
 
-    public EntryEntity(String comment, double value, String chartTitle, int index) {
+    public EntryEntity(String comment, double value, String chartTitle) {
         this.timestamp = System.currentTimeMillis();
         this.comment = comment;
         this.value = value;
         this.chartTitle = chartTitle;
-        this.index = index;
+
     }
 
 

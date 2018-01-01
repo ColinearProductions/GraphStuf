@@ -14,6 +14,8 @@ public interface ChartRepository {
     Single<Boolean> addEntry(EntryEntity entryEntity);
     Single<Boolean> addEntries(List<EntryEntity> entryEntities);
 
+    Single<Boolean> updateEntry(EntryEntity entryEntity);
+
     Single<Boolean> createChart(ChartEntity chartEntity);
     Single<List<ChartEntity>> getCharts();
 
@@ -27,7 +29,7 @@ public interface ChartRepository {
 
 
 
-    Single<EntryEntity[]> getExtremeEntries(String chartTitle);
+    Single<EntryEntity> getLastEntry(String chartTitle);
 
 
 

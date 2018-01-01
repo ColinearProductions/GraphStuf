@@ -11,6 +11,9 @@ import java.util.List;
 import javax.inject.Inject;
 
 import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 
 public class ChartRepositoryImpl implements ChartRepository {
@@ -37,13 +40,18 @@ public class ChartRepositoryImpl implements ChartRepository {
 
     @Override
     public Single<Boolean> addEntry(EntryEntity entryEntity) {
-
-
         return Single.fromCallable(() -> {
-                    ChartEntity chart = chartDatabase.chartDao().getChart(entryEntity.getChartTitle());
-                    chart.setLastIndex(chart.getLastIndex() + 1);
-                    chartDatabase.chartDao().updateChart(chart);
                     chartDatabase.entryDao().addEntry(entryEntity);
+                    return true;
+                }
+        );
+    }
+
+
+    @Override
+    public Single<Boolean> updateEntry(EntryEntity entryEntity) {
+        return Single.fromCallable(() -> {
+                    chartDatabase.entryDao().updateEntry(entryEntity);
                     return true;
                 }
         );
@@ -78,19 +86,17 @@ public class ChartRepositoryImpl implements ChartRepository {
     }
 
 
-
     @Override
-    public Single<EntryEntity[]> getExtremeEntries(String chartTitle) {
-        return Single.fromCallable(()->{
-            EntryEntity[] entries = new EntryEntity[3];
+    public Single<EntryEntity> getLastEntry(String chartTitle) {
+        Log.i("VALUES", chartTitle);
 
-            entries[0] = chartDatabase.entryDao().getLastEntryByChart(chartTitle);
-            entries[1] = chartDatabase.entryDao().getMinValueByChart(chartTitle);
-            entries[2] = chartDatabase.entryDao().getMaxValueByChart(chartTitle);
-            return entries;
+
+        return Single.fromCallable(() -> {
+            EntryEntity ee = chartDatabase.entryDao().getLastEntryByChart(chartTitle);
+            if (ee == null)
+                return null;
+            return ee;
         });
-
-
 
     }
 

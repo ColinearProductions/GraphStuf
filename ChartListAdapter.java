@@ -21,6 +21,7 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.ViewHolder> {
@@ -57,18 +58,15 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
 
 
         holder.title.setOnClickListener(v -> {
-            chartClickListener.onChartClicked(charts.get(position).getTitle());
+            chartClickListener.onChartClicked(charts.get(position));
         });
 
         holder.chartContainerLayout.setOnClickListener(v -> {
-            chartClickListener.onChartClicked(charts.get(position).getTitle());
+            chartClickListener.onChartClicked(charts.get(position));
         });
 
         holder.chartContainerLayout.setOnLongClickListener(v ->{
-
-
-
-            chartClickListener.onChartLongClicked(charts.get(position).getTitle(), charts.get(position).getLastIndex());
+            chartClickListener.onChartLongClicked(charts.get(position));
             return true;
         });
 
@@ -79,6 +77,10 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
 
         List<EntryEntity> entries = charts.get(position).getEntries();
 
+        Collections.sort(entries, (lhs, rhs) -> lhs.getTimestamp() > rhs.getTimestamp() ? 1 : (lhs.getTimestamp() < rhs.getTimestamp()) ? 1 : 0);
+
+        for(int i=0;i<entries.size();i++)
+            entries.get(i).setIndex(i);
 
 
 
@@ -183,8 +185,8 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
     }
 
     interface ChartClickListener {
-        void onChartClicked(String chartTitle);
-        void onChartLongClicked(String chartTitle, int highestEntry);
+        void onChartClicked(ChartEntity chartEntity);
+        void onChartLongClicked(ChartEntity chartEntity);
 
     }
 }

@@ -72,35 +72,31 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
             onEntryClickListener.onEntryClicked(entries.get(position).getIndex());
         });
 
+        holder.layout.setOnLongClickListener(v->{
+            onEntryClickListener.onEntryLongClicked(entries.get(position));
+            return true;
+        });
+
         Typeface face = Typeface.createFromAsset(context.getAssets(), "Bariol_Bold.otf");
         holder.entryValue.setTypeface(face);
-        holder.editButton.setTypeface(face);
         holder.entryTimestamp.setTypeface(face);
 
         if(entries.get(position).getIndex() == highlightedIndex){
             int color = ChartStyle.getColorResourceByName(chartStyle.getHighlightLineColor(), context, chartTheme);
             holder.entryValue.setTextColor(color);
-            holder.editButton.setTextColor(color);
             holder.entryTimestamp.setTextColor(color);
         }else{
             int color = ChartStyle.getColorResourceByName(chartStyle.getChartLineColor(), context, chartTheme);
             holder.entryValue.setTextColor(color);
-            holder.editButton.setTextColor(color);
             holder.entryTimestamp.setTextColor(color);
         }
-
+        holder.entryComment.setText(entries.get(position).getComment());
 
     }
 
     public void setEntries(List<EntryEntity> entries){
         this.entries=entries;
-        Collections.sort(entries, new Comparator<EntryEntity>() {
-            @Override
-            public int compare(EntryEntity lhs, EntryEntity rhs) {
-                // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
-                return lhs.getTimestamp() > rhs.getTimestamp() ? -1 : (lhs.getTimestamp() < rhs.getTimestamp()) ? 1 : 0;
-            }
-        });
+        Collections.sort(entries, (lhs, rhs) -> lhs.getTimestamp() > rhs.getTimestamp() ? -1 : (lhs.getTimestamp() < rhs.getTimestamp()) ? 1 : 0);
         notifyDataSetChanged();
     }
 
@@ -116,7 +112,8 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
 
         TextView entryTimestamp;
         TextView entryValue;
-        TextView editButton;
+
+        TextView entryComment;
         View layout;
 
 
@@ -125,7 +122,8 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
             super(v);
             entryTimestamp = v.findViewById(R.id.entry_timestamp);
             entryValue = v.findViewById(R.id.entry_value);
-            editButton = v.findViewById(R.id.entry_edit_button);
+
+            entryComment = v.findViewById(R.id.entry_comment);
             layout = v.findViewById(R.id.linearLayout);
         }
 
@@ -135,6 +133,7 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
 
     public interface OnEntryClickListener{
         public void onEntryClicked(int entryIndex);
+        public void onEntryLongClicked(EntryEntity entryEntity);
     }
 
 }

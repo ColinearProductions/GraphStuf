@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
@@ -34,6 +36,9 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -42,7 +47,7 @@ import java.util.List;
  */
 public class ChartDetailFragment extends LifecycleFragment implements AdapterView.OnItemSelectedListener, View.OnClickListener, OnChartValueSelectedListener, EntryListAdapter.OnEntryClickListener {
 
-    FloatingActionButton fab;
+
     ChartListViewModel chartListViewModel;
 
     ChartEntity chartEntity;
@@ -87,16 +92,13 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         super.onViewCreated(view, savedInstanceState);
 
 
-        fab = getActivity().findViewById(R.id.button);
-        fab.hide();
+
 
         addEntryButton = view.findViewById(R.id.chart_detail_add_button);
         addEntryButton.setOnClickListener(this);
 
         chartListViewModel = ViewModelProviders.of(getActivity()).get(ChartListViewModel.class);
 
-        Log.i("chart", chartListViewModel.getCurrentChartTitle());
-        chartListViewModel.getChartByTitle(chartListViewModel.getCurrentChartTitle()).observe(this, this::onChartLoaded);
 
         lineChart = view.findViewById(R.id.full_chart);
         lineChart.setOnChartValueSelectedListener(this);
@@ -130,6 +132,11 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         mRecyclerView.setAdapter(mAdapter);
 
         dateFormatter = new XAxisDateFormatter();
+
+
+
+        // chartListViewModel.getChartByTitle(chartListViewModel.getCurrentChartTitle()).observe(this, this::onChartLoaded);
+        onChartLoaded(chartListViewModel.getCurrentChartEntity());
     }
 
 
@@ -141,18 +148,41 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         chartListViewModel.getEntriesByChart(chart.getTitle()).observe(this, this::onEntriesUpdated);
         intervalSpinner.setOnItemSelectedListener(this);
 
+        titleTextView.setTextColor(ChartStyle.getColorResourceByName("@*highlight_color", getActivity(), chartEntity.getColorScheme()));
 
+
+
+    }
+
+
+    @Override
+    public void onResume() {
+        ((FloatingActionButton)getActivity().findViewById(R.id.button)).hide();
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        ((FloatingActionButton)getActivity().findViewById(R.id.button)).show();
+        super.onPause();
     }
 
 
     private void onEntriesUpdated(List<EntryEntity> entries) {
 
+        Collections.sort(entries, (lhs, rhs) -> lhs.getTimestamp() > rhs.getTimestamp() ? 1 : (lhs.getTimestamp() < rhs.getTimestamp()) ? 1 : 0);
+
+        for(int i=0;i<entries.size();i++)
+            entries.get(i).setIndex(i);
+
         chartEntity.setEntries(entries);
         redrawChartView();
         mAdapter.setEntries(entries);
 
-
     }
+
+
+
 
     private void redrawChartView() {
 
@@ -191,12 +221,8 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
     }
 
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        fab.show();
 
-    }
+
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -231,18 +257,19 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         if (v.getId() == R.id.chart_detail_add_button) {
 
 
-            new MaterialDialog.Builder(getActivity())
-                    .title("Value")
-                    .content("Enter the value")
-                    .inputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL)
-                    .input("0", "", new MaterialDialog.InputCallback() {
-                        @Override
-                        public void onInput(MaterialDialog dialog, CharSequence input) {
-                            chartListViewModel.addEntry(new EntryEntity("comment", Double.parseDouble(input.toString()), chartEntity.getTitle(), chartEntity.getLastIndex()));
-                        }
-                    }).show();
+            chartListViewModel.setCurrentChart(chartEntity);
+            chartListViewModel.setCurrentEntry(null);
+            chartListViewModel.setAction("");
 
-            return;
+            String FRAGMENT_NAME ="EntryDetailFragment";
+            Fragment entryDetailFragment =  new EntryDetailFragment();
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.setCustomAnimations(R.anim.fadein,
+                    R.anim.fadeout, R.anim.fadein, R.anim.fadeout);
+            fragmentTransaction.add(R.id.outer_layout, entryDetailFragment,FRAGMENT_NAME);
+            fragmentTransaction.addToBackStack(FRAGMENT_NAME);
+            fragmentTransaction.commit();
         }
     }
 
@@ -291,5 +318,23 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         clickedOnEntityDirectly = true;
         lineChart.highlightValue((float) entryIndex, 0);
 
+    }
+
+    @Override
+    public void onEntryLongClicked(EntryEntity entryEntity) {
+
+        chartListViewModel.setCurrentChart(chartEntity);
+        chartListViewModel.setCurrentEntry(entryEntity);
+        chartListViewModel.setAction(Const.UPDATE_ENTRY_ACTION);
+
+        String FRAGMENT_NAME ="EntryDetailFragment";
+        Fragment entryDetailFragment =  new EntryDetailFragment();
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.setCustomAnimations(R.anim.fadein,
+                R.anim.fadeout, R.anim.fadein, R.anim.fadeout);
+        fragmentTransaction.add(R.id.outer_layout, entryDetailFragment,FRAGMENT_NAME);
+        fragmentTransaction.addToBackStack(FRAGMENT_NAME);
+        fragmentTransaction.commit();
     }
 }

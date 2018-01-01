@@ -13,6 +13,8 @@ public class Const {
     public static String COLOR_SCHEME_GREEN = "GREEN";
     public static String COLOR_SCHEME_BLUE = "BLUE";
 
+    public static String UPDATE_ENTRY_ACTION = "UPDATE_ENTRY_ACTION";
+
     public static int GET_COLOR_BY_SCHEME(String SCHEME_NAME, Context context) {
         if (SCHEME_NAME.equals(COLOR_SCHEME_RED))
             return context.getResources().getColor(R.color.RED_line_color);

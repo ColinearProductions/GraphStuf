@@ -16,7 +16,6 @@ public class ChartEntity {
     @PrimaryKey()
     private String title;
     private String colorScheme;
-    private int lastIndex =0;
     private boolean onlyOneADay;
 
     @Ignore
@@ -46,13 +45,6 @@ public class ChartEntity {
         this.colorScheme = colorScheme;
     }
 
-    public int getLastIndex() {
-        return lastIndex;
-    }
-
-    public void setLastIndex(int lastIndex) {
-        this.lastIndex = lastIndex;
-    }
 
     public boolean isOnlyOneADay() {
         return onlyOneADay;
@@ -74,14 +66,11 @@ public class ChartEntity {
     public String toString() {
         return "ChartEntity{" +
                 "title='" + title + '\'' +
-                ", color='" + colorScheme + '\'' +
-                ", lastIndex=" + lastIndex +
+                ", colorScheme='" + colorScheme + '\'' +
                 ", onlyOneADay=" + onlyOneADay +
                 ", entries=" + entries +
                 '}';
     }
-
-
 }
 
 

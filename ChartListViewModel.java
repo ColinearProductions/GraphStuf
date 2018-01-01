@@ -25,9 +25,9 @@ public class ChartListViewModel extends AndroidViewModel {
     @Inject
     ChartRepository chartRepository;
 
-    String currentChartTitle = null;
-    int lastIndex = 0;
-
+    private ChartEntity currentChartEntity = null;
+    private EntryEntity currentEntryEntity = null;
+    private String action = null;
 
 
 
@@ -58,11 +58,6 @@ public class ChartListViewModel extends AndroidViewModel {
                 .subscribe(result -> Log.i("ChartListViewModel", "Add entries Result: " + result));
     }
 
-    Single<Boolean> addEntryWithObservable(EntryEntity entryEntities) {
-
-       return chartRepository.addEntry(entryEntities);
-    }
-
 
 
 
@@ -86,27 +81,45 @@ public class ChartListViewModel extends AndroidViewModel {
     }
 
 
-    public void setCurrentChart(String chartTitle, int lastIndex){
-        Log.i("chart", "set current chart: " +  chartTitle);
-        this.currentChartTitle = chartTitle;
-        this.lastIndex = lastIndex;
+    public void setCurrentChart(ChartEntity chartEntity){
+
+        this.currentChartEntity = chartEntity;
+
     }
 
-    public String getCurrentChartTitle(){
-        return this.currentChartTitle;
+    public void setCurrentEntry(EntryEntity entry){
+        this.currentEntryEntity = entry;
+    }
+
+    public ChartEntity getCurrentChartEntity() {
+        return currentChartEntity;
+    }
+
+    public EntryEntity getCurrentEntryEntity() {
+        return currentEntryEntity;
     }
 
 
-    public int getCurrentChartLastIndex(){
-        return this.lastIndex;
+
+    public String getAction() {
+        return action;
     }
 
-    public void clearCurrentChart(){
-        this.currentChartTitle = null;
+    public void setAction(String action) {
+        this.action = action;
     }
 
-    public Single<EntryEntity[]> getExtremeEntries(String chartTitle){
-        return chartRepository.getExtremeEntries(chartTitle);
+    public Single<EntryEntity> getLastEntry(String chartTitle){
+        return chartRepository.getLastEntry(chartTitle);
+    }
+
+    public Single<Boolean> updateEntry(EntryEntity entryEntity){
+        return chartRepository.updateEntry(entryEntity);
+    }
+
+
+    Single<Boolean> addEntryWithObservable(EntryEntity entryEntities) {
+        return chartRepository.addEntry(entryEntities);
     }
 
 }

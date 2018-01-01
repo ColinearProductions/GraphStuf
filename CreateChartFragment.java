@@ -38,8 +38,6 @@ import io.reactivex.schedulers.Schedulers;
  */
 public class CreateChartFragment extends LifecycleFragment implements TextWatcher {
 
-    FloatingActionButton fab;
-
     ChartListViewModel chartListViewModel;
 
     EditText chartTitleEditText;
@@ -63,8 +61,7 @@ public class CreateChartFragment extends LifecycleFragment implements TextWatche
         super.onViewCreated(view, savedInstanceState);
 
 
-        fab = getActivity().findViewById(R.id.button);
-        fab.hide();
+
         chartListViewModel = ViewModelProviders.of(this).get(ChartListViewModel.class);
 
         chartTitleEditText = getActivity().findViewById(R.id.chart_title_edit_text);
@@ -128,12 +125,6 @@ public class CreateChartFragment extends LifecycleFragment implements TextWatche
     }
 
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        fab.show();
-
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -175,4 +166,19 @@ public class CreateChartFragment extends LifecycleFragment implements TextWatche
         CompoundButtonCompat.setButtonTintList(checkBox, new
                 ColorStateList(states, colors));
     }
+
+    @Override
+    public void onResume() {
+        ((FloatingActionButton)getActivity().findViewById(R.id.button)).hide();
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        ((FloatingActionButton)getActivity().findViewById(R.id.button)).show();
+        super.onPause();
+    }
+
+
+
 }
