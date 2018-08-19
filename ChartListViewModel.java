@@ -122,4 +122,7 @@ public class ChartListViewModel extends AndroidViewModel {
         return chartRepository.addEntry(entryEntities);
     }
 
+    Single<Boolean> deleteEntry(EntryEntity entryEntity){
+        return chartRepository.deleteEntry(entryEntity);
+    }
 }

@@ -3,6 +3,7 @@ package com.colinear.graphstuff.DB.Entities;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,10 +11,14 @@ import java.util.Comparator;
 import java.util.List;
 
 
+
+
 @Entity(tableName = "charts")
 public class ChartEntity {
 
+
     @PrimaryKey()
+    @NonNull
     private String title;
     private String colorScheme;
     private boolean onlyOneADay;
@@ -22,7 +27,7 @@ public class ChartEntity {
     private List<EntryEntity> entries = new ArrayList<>();
 
 
-    public ChartEntity(String title, String colorScheme, boolean onlyOneADay) {
+    public ChartEntity( @NonNull String  title, String colorScheme, boolean onlyOneADay) {
         this.title = title;
         this.colorScheme = colorScheme;
         this.onlyOneADay = onlyOneADay;

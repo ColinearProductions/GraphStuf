@@ -2,37 +2,29 @@ package com.colinear.graphstuff;
 
 
 
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.arch.lifecycle.LifecycleActivity;
+
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.InputType;
 import android.util.Log;
 
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.colinear.graphstuff.DB.Entities.ChartEntity;
-import com.colinear.graphstuff.DB.Entities.EntryEntity;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-public class ChartsListActivity extends LifecycleActivity  implements ChartListAdapter.ChartClickListener {
+public class ChartsListActivity extends AppCompatActivity implements ChartListAdapter.ChartClickListener {
 
 
     private RecyclerView mRecyclerView;
     private ChartListAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private ChartListViewModel chartListViewModel;
-
-    //todo App name : Provis
-    // progress visualizer
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,8 +95,8 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
     @Override
     public void onChartClicked(ChartEntity chartEntity) {
         chartListViewModel.setCurrentChart(chartEntity);
-        String FRAGMENT_NAME ="ChartDetailFragment";
-        Fragment chartDetailFragment =  new ChartDetailFragment();
+        String FRAGMENT_NAME ="FragmentChartDetail";
+        Fragment chartDetailFragment =  new FragmentChartDetail();
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.setCustomAnimations(R.anim.fadein,
@@ -120,8 +112,8 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
         chartListViewModel.setCurrentEntry(null);
         chartListViewModel.setAction("");
 
-        String FRAGMENT_NAME ="EntryDetailFragment";
-        Fragment entryDetailFragment =  new EntryDetailFragment();
+        String FRAGMENT_NAME ="FragmentEntryDetail";
+        Fragment entryDetailFragment =  new FragmentEntryDetail();
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.setCustomAnimations(R.anim.fadein,
@@ -132,8 +124,8 @@ public class ChartsListActivity extends LifecycleActivity  implements ChartListA
     }
 
     public void addChart(){
-        String FRAGMENT_NAME ="CreateChartFragment";
-        Fragment createChartFragment =  new CreateChartFragment();
+        String FRAGMENT_NAME ="FragmentCreateChart";
+        Fragment createChartFragment =  new FragmentCreateChart();
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.setCustomAnimations(R.anim.fadein,

@@ -2,14 +2,11 @@ package com.colinear.graphstuff;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.LinearGradient;
 import android.graphics.Paint;
-import android.graphics.Shader;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.util.Log;
 
-import com.github.mikephil.charting.charts.Chart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -19,8 +16,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 
+
+
 public class ChartStyle {
-    private String chartBackground = "#000000";
     private String chartLineColor = "#FFFFFF";
     private float chartLineWidth = 3f;
     private String lineMode = "CUBIC";
@@ -95,10 +93,9 @@ public class ChartStyle {
     private String fillColor = "#FFFFFF";
     private boolean gradientFill = true;
     private ChartGradient[] gradients;
-    
 
-    //todo animation
-    // todo fill
+    private ChartGradient[] backgroundGradient;
+
 
     private transient Gson gson = new Gson();
 
@@ -144,11 +141,11 @@ public class ChartStyle {
     public static int getColorResourceByName(String name, Context context, String themePrefix) {
         String colorName = name.substring(1, name.length());
 
-        int resId=0;
-        if(colorName.contains("*")){
-          resId = getResId(colorName.replace("*",themePrefix+"_"), R.color.class);
-        }else{
-            resId=getResId(colorName, R.color.class);
+        int resId = 0;
+        if (colorName.contains("*")) {
+            resId = getResId(colorName.replace("*", themePrefix + "_"), R.color.class);
+        } else {
+            resId = getResId(colorName, R.color.class);
         }
 
 
@@ -230,7 +227,7 @@ public class ChartStyle {
             GradientDrawable[] layers = new GradientDrawable[gradients.length];
             Log.i("JSON", "There are " + layers.length + " layers");
             for (int i = 0; i < gradients.length; i++)
-                layers[i] = gradients[i].generateGradient(context, themePrefix );
+                layers[i] = gradients[i].generateGradient(context, themePrefix);
             LayerDrawable layerDrawable = new LayerDrawable(layers);
             lineDataSet.setFillDrawable(layerDrawable);
         }
@@ -242,10 +239,27 @@ public class ChartStyle {
     public LineChart applyStyle(LineChart lineChart, Context context, String themePrefix) {
 
 
-        if (chartBackground.contains("@"))
-            lineChart.setBackgroundColor(getColorResourceByName(chartBackground, context, themePrefix));
-        else
-            lineChart.setBackgroundColor(Color.parseColor(chartBackground));
+
+
+        GradientDrawable[] layers = new GradientDrawable[backgroundGradient.length];
+        Log.i("JSON", "There are " + layers.length + " layers");
+        for (int i = 0; i < backgroundGradient.length; i++)
+            layers[i] = backgroundGradient[i].generateGradient(context, themePrefix);
+        LayerDrawable layerDrawable = new LayerDrawable(layers);
+        lineChart.setBackground(layerDrawable);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         if (overrideOffset)
             lineChart.setViewPortOffsets(offsetLeft, offsetTop, offsetRight, offsetBottom);
@@ -406,6 +420,9 @@ public class ChartStyle {
     }
 
 
+
+
+
     public class ChartGradient {
         public String[] colors;
         public String orientation;
@@ -443,11 +460,38 @@ public class ChartStyle {
 
             return gradientDrawable;
         }
+
+        public void setColors(String[] colors) {
+            this.colors = colors;
+        }
+
+        public void setOrientation(String orientation) {
+            this.orientation = orientation;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String[] getColors() {
+            return colors;
+        }
+
+        public String getOrientation() {
+            return orientation;
+        }
+
+        public String getType() {
+            return type;
+        }
     }
 
 
-    public String getChartBackground() {
-        return chartBackground;
+    //region GETTERS / SETTERS
+
+
+    public ChartGradient[] getBackgroundGradient() {
+        return backgroundGradient;
     }
 
     public String getChartLineColor() {
@@ -665,6 +709,8 @@ public class ChartStyle {
     public ChartGradient[] getGradients() {
         return gradients;
     }
+
+    //endregion
 
 
 }

@@ -8,6 +8,8 @@ import android.arch.persistence.room.PrimaryKey;
 
 import java.util.Date;
 
+import io.reactivex.annotations.NonNull;
+
 import static android.arch.persistence.room.ForeignKey.CASCADE;
 
 
@@ -15,6 +17,7 @@ import static android.arch.persistence.room.ForeignKey.CASCADE;
 public class EntryEntity {
 
     @PrimaryKey(autoGenerate = true)
+    @NonNull
     int id;
 
     Long timestamp; //todo right now it's just an int index, change later
@@ -38,6 +41,8 @@ public class EntryEntity {
         this.chartTitle = chartTitle;
 
     }
+
+
 
 
 

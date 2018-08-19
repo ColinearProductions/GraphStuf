@@ -4,8 +4,10 @@ package com.colinear.graphstuff;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +30,7 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
 
     List<ChartEntity> charts = new ArrayList<>();
 
+    int minimumEntriesLength = 8;
 
 
     ChartClickListener chartClickListener;
@@ -54,9 +57,6 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
         holder.title.setText(charts.get(position).getTitle());
 
 
-
-
-
         holder.title.setOnClickListener(v -> {
             chartClickListener.onChartClicked(charts.get(position));
         });
@@ -65,35 +65,47 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
             chartClickListener.onChartClicked(charts.get(position));
         });
 
-        holder.chartContainerLayout.setOnLongClickListener(v ->{
+        holder.chartContainerLayout.setOnLongClickListener(v -> {
             chartClickListener.onChartLongClicked(charts.get(position));
             return true;
         });
 
 
-
-
-
-
         List<EntryEntity> entries = charts.get(position).getEntries();
 
-        Collections.sort(entries, (lhs, rhs) -> lhs.getTimestamp() > rhs.getTimestamp() ? 1 : (lhs.getTimestamp() < rhs.getTimestamp()) ? 1 : 0);
+        Log.i("NEW", entries.size() + "");
 
-        for(int i=0;i<entries.size();i++)
+        if (entries.size() < minimumEntriesLength) {
+            for (int i = entries.size(); i < minimumEntriesLength; i++) {
+                EntryEntity ee = new EntryEntity("", 0, charts.get(position).getTitle());
+                ee.setTimestamp(-1L);
+                entries.add(ee);
+            }
+
+
+        }
+
+        Collections.sort(entries, (lhs, rhs) -> {
+            if (lhs.getTimestamp().equals(rhs.getTimestamp()))
+                return 0;
+            else
+                return lhs.getTimestamp() > rhs.getTimestamp() ? 1 : -1;
+        });
+
+
+        for (int i = 0; i < entries.size(); i++)
             entries.get(i).setIndex(i);
-
-
 
 
         ArrayList<Entry> mpEntries = new ArrayList<>();
 
         if (entries.size() < 1) { // if no data, add 2 points with value 0
-            mpEntries.add(new Entry(0,1));
-            mpEntries.add(new Entry(1,1));
-        }else {
+            mpEntries.add(new Entry(0, 1));
+            mpEntries.add(new Entry(1, 1));
+        } else {
             for (EntryEntity e : entries)
                 mpEntries.add(new Entry(e.getIndex(), (float) e.getValue()));
-            if(entries.size()==1)
+            if (entries.size() == 1)
                 mpEntries.add(new Entry(entries.get(0).getIndex(), (float) entries.get(0).getValue()));
 
 
@@ -102,11 +114,11 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
 
         ChartStyle chartStyle = null;
 
-        if (charts.get(position).getColorScheme() == Const.COLOR_SCHEME_GREEN){
+        if (charts.get(position).getColorScheme() == Const.COLOR_SCHEME_GREEN) {
             chartStyle = ChartStyle.fromJson("chartListStyle.json", ctx);
-        }else if(charts.get(position).getColorScheme() == Const.COLOR_SCHEME_RED){
+        } else if (charts.get(position).getColorScheme() == Const.COLOR_SCHEME_RED) {
             chartStyle = ChartStyle.fromJson("chartListStyle.json", ctx);
-        }else{
+        } else {
             chartStyle = ChartStyle.fromJson("chartListStyle.json", ctx);
         }
 
@@ -116,12 +128,12 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
         LineChart lineChart = holder.chartView;
         LineData lineData = new LineData(dataSet);
         lineChart.setData(lineData);
-        chartStyle.applyStyle(lineChart, ctx,charts.get(position).getColorScheme());
+        chartStyle.applyStyle(lineChart, ctx, charts.get(position).getColorScheme());
 
         holder.setTypeface(ctx);
 
 
-        int color = ChartStyle.getColorResourceByName(chartStyle.getChartLineColor(), ctx,charts.get(position).getColorScheme());
+        int color = ChartStyle.getColorResourceByName(chartStyle.getChartLineColor(), ctx, charts.get(position).getColorScheme());
 
         holder.title.setTextColor(color);
 
@@ -135,7 +147,6 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
     }
 
 
-
     @Override
     public int getItemCount() {
         return charts.size();
@@ -146,8 +157,7 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
 
         TextView title;
         LineChart chartView;
-        FrameLayout chartContainerLayout;
-
+        ConstraintLayout chartContainerLayout;
 
 
         ViewHolder(View v) {
@@ -156,20 +166,14 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
             chartView = v.findViewById(R.id.full_chart);
 
 
-
-
-
             chartContainerLayout = v.findViewById(R.id.chart_container_layout);
 
         }
 
-        public void setTypeface(Context ctx){
+        public void setTypeface(Context ctx) {
             Typeface face = Typeface.createFromAsset(ctx.getAssets(), "Bariol_Bold.otf");
             this.title.setTypeface(face);
         }
-
-
-
 
 
     }
@@ -186,6 +190,7 @@ public class ChartListAdapter extends RecyclerView.Adapter<ChartListAdapter.View
 
     interface ChartClickListener {
         void onChartClicked(ChartEntity chartEntity);
+
         void onChartLongClicked(ChartEntity chartEntity);
 
     }

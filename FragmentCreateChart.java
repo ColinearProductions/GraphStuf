@@ -2,9 +2,10 @@ package com.colinear.graphstuff;
 
 
 import android.app.Activity;
-import android.arch.lifecycle.LifecycleFragment;
+
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -30,13 +31,14 @@ import com.colinear.graphstuff.DB.Entities.ChartEntity;
 import java.util.ArrayList;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class CreateChartFragment extends LifecycleFragment implements TextWatcher {
+public class FragmentCreateChart extends Fragment implements TextWatcher {
 
     ChartListViewModel chartListViewModel;
 
@@ -53,13 +55,12 @@ public class CreateChartFragment extends LifecycleFragment implements TextWatche
 
     Button createChartButton;
 
-    public CreateChartFragment() {
+    public FragmentCreateChart() {
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
 
 
         chartListViewModel = ViewModelProviders.of(this).get(ChartListViewModel.class);
@@ -72,23 +73,21 @@ public class CreateChartFragment extends LifecycleFragment implements TextWatche
         red = getActivity().findViewById(R.id.color_scheme_red);
         green = getActivity().findViewById(R.id.color_scheme_green);
         blue = getActivity().findViewById(R.id.color_scheme_blue);
+
         createChartButton = view.findViewById(R.id.create_chart_button);
 
 
         colorSchemeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
             int c;
             if (checkedId == red.getId()) {
-                color = Const.COLOR_SCHEME_RED;
-                c = getResources().getColor(R.color.RED_line_color);
-            } else if (checkedId == blue.getId()) {
-                color = Const.COLOR_SCHEME_BLUE;
-                c = getResources().getColor(R.color.BLUE_line_color);
-
-            } else {
-                color = Const.COLOR_SCHEME_GREEN;
-                c = getResources().getColor(R.color.GREEN_line_color);
-
+                c = getResources().getColor(R.color.RED_background_gradient_start);
+            }else if (checkedId == blue.getId()){
+                c = getResources().getColor(R.color.BLUE_background_gradient_start);
+            }else{
+                c = getResources().getColor(R.color.GREEN_background_gradient_start);
             }
+
+
             onceADayCheckbox.setTextColor(c);
             setCheckBoxColor(onceADayCheckbox, c, c);
             chartTitleEditText.setTextColor(c);
@@ -97,6 +96,7 @@ public class CreateChartFragment extends LifecycleFragment implements TextWatche
             ViewCompat.setBackgroundTintList(chartTitleEditText, colorStateList);
 
             createChartButton.setBackgroundColor(c);
+            createChartButton.setTextColor(Color.WHITE);
         });
 
 
@@ -113,17 +113,16 @@ public class CreateChartFragment extends LifecycleFragment implements TextWatche
         unavailableNames = new ArrayList<>();
 
 
-        chartListViewModel.getCharts().observeOn(AndroidSchedulers.mainThread())
+        Disposable x = chartListViewModel.getCharts()
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribe(charts -> {
                     for (ChartEntity entity : charts)
                         unavailableNames.add(entity.getTitle());
                     afterTextChanged(chartTitleEditText.getText());
-
                 });
 
     }
-
 
 
     @Override
@@ -169,16 +168,15 @@ public class CreateChartFragment extends LifecycleFragment implements TextWatche
 
     @Override
     public void onResume() {
-        ((FloatingActionButton)getActivity().findViewById(R.id.button)).hide();
+        ((FloatingActionButton) getActivity().findViewById(R.id.button)).hide();
         super.onResume();
     }
 
     @Override
     public void onPause() {
-        ((FloatingActionButton)getActivity().findViewById(R.id.button)).show();
+        ((FloatingActionButton) getActivity().findViewById(R.id.button)).show();
         super.onPause();
     }
-
 
 
 }

@@ -39,19 +39,15 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
 
     }
 
-    public void setHighlightedIndex(int highlightedIndex){
+    public void setHighlightedIndex(int highlightedIndex) {
         this.highlightedIndex = highlightedIndex;
         notifyDataSetChanged();
     }
 
-    public void setTheme( String chartTheme){
+    public void setTheme(String chartTheme) {
         this.chartTheme = chartTheme;
 
     }
-
-
-
-
 
 
     @Override
@@ -65,14 +61,25 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-        Date date = new Date( entries.get(position).getTimestamp());
-        holder.entryTimestamp.setText("Added on: "+df.format(date));
-        holder.entryValue.setText(""+entries.get(position).getValue());
+        Date date = new Date(entries.get(position).getTimestamp());
+
+        boolean isDummy = entries.get(position).getTimestamp() == -1;
+
+
+        if (isDummy)
+            holder.hide();
+    
+
+        holder.entryTimestamp.setText("Added on: " + df.format(date));
+
+
+        holder.entryValue.setText("" + entries.get(position).getValue());
         holder.layout.setOnClickListener(v -> {
             onEntryClickListener.onEntryClicked(entries.get(position).getIndex());
         });
 
-        holder.layout.setOnLongClickListener(v->{
+        holder.layout.setOnLongClickListener(v -> {
+
             onEntryClickListener.onEntryLongClicked(entries.get(position));
             return true;
         });
@@ -81,25 +88,31 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
         holder.entryValue.setTypeface(face);
         holder.entryTimestamp.setTypeface(face);
 
-        if(entries.get(position).getIndex() == highlightedIndex){
+
+
+        if (entries.get(position).getIndex() == highlightedIndex) {
             int color = ChartStyle.getColorResourceByName(chartStyle.getHighlightLineColor(), context, chartTheme);
             holder.entryValue.setTextColor(color);
             holder.entryTimestamp.setTextColor(color);
-        }else{
+        } else {
             int color = ChartStyle.getColorResourceByName(chartStyle.getChartLineColor(), context, chartTheme);
             holder.entryValue.setTextColor(color);
             holder.entryTimestamp.setTextColor(color);
         }
+
         holder.entryComment.setText(entries.get(position).getComment());
 
+        int textColor = ChartStyle.getColorResourceByName(chartStyle.getBackgroundGradient()[0].getColors()[0], context, chartTheme);
+        holder.entryComment.setTextColor(textColor);
+        holder.entryTimestamp.setTextColor(textColor);
+        holder.entryValue.setTextColor(textColor);
     }
 
-    public void setEntries(List<EntryEntity> entries){
-        this.entries=entries;
+    public void setEntries(List<EntryEntity> entries) {
+        this.entries = entries;
         Collections.sort(entries, (lhs, rhs) -> lhs.getTimestamp() > rhs.getTimestamp() ? -1 : (lhs.getTimestamp() < rhs.getTimestamp()) ? 1 : 0);
         notifyDataSetChanged();
     }
-
 
 
     @Override
@@ -117,7 +130,6 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
         View layout;
 
 
-
         ViewHolder(View v) {
             super(v);
             entryTimestamp = v.findViewById(R.id.entry_timestamp);
@@ -127,12 +139,20 @@ public class EntryListAdapter extends RecyclerView.Adapter<EntryListAdapter.View
             layout = v.findViewById(R.id.linearLayout);
         }
 
+        public void hide() {
+            layout.setVisibility(View.GONE);
+        }
+
+        public void show(){
+            layout.setVisibility(View.VISIBLE);
+        }
 
 
     }
 
-    public interface OnEntryClickListener{
+    public interface OnEntryClickListener {
         public void onEntryClicked(int entryIndex);
+
         public void onEntryLongClicked(EntryEntity entryEntity);
     }
 

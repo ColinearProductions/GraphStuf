@@ -67,6 +67,14 @@ public class ChartRepositoryImpl implements ChartRepository {
         });
     }
 
+    @Override
+    public Single<Boolean> deleteEntry(EntryEntity entryEntity) {
+        return Single.fromCallable(() -> {
+            chartDatabase.entryDao().deleteEntry(entryEntity);
+            return true;
+        });
+    }
+
 
     @Override
     public LiveData<List<EntryEntity>> getEntries() {

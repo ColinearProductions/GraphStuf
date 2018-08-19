@@ -13,6 +13,7 @@ public interface ChartRepository {
 
     Single<Boolean> addEntry(EntryEntity entryEntity);
     Single<Boolean> addEntries(List<EntryEntity> entryEntities);
+    Single<Boolean> deleteEntry(EntryEntity entryEntity);
 
     Single<Boolean> updateEntry(EntryEntity entryEntity);
 
@@ -30,6 +31,8 @@ public interface ChartRepository {
 
 
     Single<EntryEntity> getLastEntry(String chartTitle);
+
+
 
 
 

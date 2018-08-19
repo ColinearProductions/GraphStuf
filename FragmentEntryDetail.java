@@ -2,7 +2,6 @@ package com.colinear.graphstuff;
 
 
 import android.app.DatePickerDialog;
-import android.arch.lifecycle.LifecycleFragment;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
@@ -38,7 +37,7 @@ import io.reactivex.schedulers.Schedulers;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class EntryDetailFragment extends LifecycleFragment implements View.OnClickListener {
+public class FragmentEntryDetail extends Fragment implements View.OnClickListener {
 
 
     ChartListViewModel chartListViewModel;
@@ -60,6 +59,7 @@ public class EntryDetailFragment extends LifecycleFragment implements View.OnCli
     Button addEntryButton;
     TextView commentText;
     TextView commentLabel;
+    Button deleteButton;
 
     TextView titleText;
 
@@ -70,7 +70,7 @@ public class EntryDetailFragment extends LifecycleFragment implements View.OnCli
 
     EntryEntity updateEntry;
 
-    public EntryDetailFragment() {
+    public FragmentEntryDetail() {
 
     }
 
@@ -104,6 +104,7 @@ public class EntryDetailFragment extends LifecycleFragment implements View.OnCli
         commentText = view.findViewById(R.id.comment_text_view);
         commentLabel = view.findViewById(R.id.comment_label);
         titleText = view.findViewById(R.id.title_text);
+        deleteButton = view.findViewById(R.id.delete_button);
 
         minusButton = view.findViewById(R.id.minus_fab);
         plusButton = view.findViewById(R.id.plus_fab);
@@ -114,7 +115,7 @@ public class EntryDetailFragment extends LifecycleFragment implements View.OnCli
 
             new MaterialDialog.Builder(getActivity())
                     .title("Add a comment")
-                    .content(comment)
+                    .content("Enter a comment for this entry")
                     .positiveText("Apply")
                     .negativeText("Cancel")
                     .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE)
@@ -128,6 +129,33 @@ public class EntryDetailFragment extends LifecycleFragment implements View.OnCli
 
         commentText.setOnClickListener(onCommentClickedListener);
         commentLabel.setOnClickListener(onCommentClickedListener);
+
+        if(chartListViewModel.getAction().equals(Const.UPDATE_ENTRY_ACTION)){
+            deleteButton.setVisibility(View.VISIBLE);
+        }else{
+            deleteButton.setVisibility(View.GONE);
+        }
+
+        //todo update dialogs to be dark themed
+        //todo only once a day. If option is selected, when trying to add a new entry, force update on last entry.
+        //todo rename charts
+
+        deleteButton.setOnClickListener( v-> {
+            new MaterialDialog.Builder(getActivity())
+                    .title("Are you sure you want to delete this entry?")
+                    .content("Deleting this entry is an irreversible action")
+                    .positiveText("Yes")
+                    .negativeText("Cancel")
+                    .onPositive((a,b)->{
+                        chartListViewModel.deleteEntry(chartListViewModel.getCurrentEntryEntity())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribeOn(Schedulers.io())
+                                .subscribe(result -> {
+                                    getActivity().onBackPressed();
+                                });;
+                    })
+                    .show();
+        });
 
 
         addEntryButton.setOnClickListener(v -> {
@@ -160,10 +188,6 @@ public class EntryDetailFragment extends LifecycleFragment implements View.OnCli
 
 
         if (!chartListViewModel.getAction().equals(Const.UPDATE_ENTRY_ACTION)) {
-
-            /*chartListViewModel
-                    .getChartByTitle(chartListViewModel.getCurrentChartTitle())
-                    .observe(this, chartEntity -> onChartLoaded(chartEntity));*/
             addEntryButton.setText("Add");
             onChartLoaded(chartListViewModel.getCurrentChartEntity());
         } else {
@@ -242,6 +266,7 @@ public class EntryDetailFragment extends LifecycleFragment implements View.OnCli
         commentText.setTextColor(UIcolor);
         commentLabel.setTextColor(UIcolor);
         titleText.setTextColor(UIcolor);
+        deleteButton.setTextColor(UIcolor);
 
         valueText.getBackground().mutate().setColorFilter(UIcolor, PorterDuff.Mode.SRC_ATOP);
 

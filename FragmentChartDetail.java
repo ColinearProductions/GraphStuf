@@ -1,8 +1,8 @@
 package com.colinear.graphstuff;
 
 
-import android.arch.lifecycle.LifecycleFragment;
 import android.arch.lifecycle.ViewModelProviders;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -12,7 +12,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,7 +23,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.colinear.graphstuff.DB.Entities.ChartEntity;
 import com.colinear.graphstuff.DB.Entities.EntryEntity;
 import com.github.mikephil.charting.charts.LineChart;
@@ -35,17 +33,14 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ChartDetailFragment extends LifecycleFragment implements AdapterView.OnItemSelectedListener, View.OnClickListener, OnChartValueSelectedListener, EntryListAdapter.OnEntryClickListener {
+public class FragmentChartDetail extends Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener, OnChartValueSelectedListener, EntryListAdapter.OnEntryClickListener {
 
 
     ChartListViewModel chartListViewModel;
@@ -60,14 +55,13 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
     boolean lockZoom;
     boolean showValues;
 
+    int minimumEntriesLength = 8;
+
     int visibleItems = -1;
 
     Button addEntryButton;
 
     boolean clickedOnEntityDirectly = false; // if true, dont scroll to the highlighted entry item in the list.
-    //todo maybe instead of data point detail, also have a scrollable list of the entries
-    // when you click an entry, highlight the datapoint, and the other way around
-    // only after that show the details
 
 
     private RecyclerView mRecyclerView;
@@ -79,7 +73,9 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
     Spinner intervalSpinner;
     ChartStyle chartStyle;
 
-    public ChartDetailFragment() {
+
+
+    public FragmentChartDetail() {
     }
 
     @Override
@@ -90,8 +86,6 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-
 
 
         addEntryButton = view.findViewById(R.id.chart_detail_add_button);
@@ -134,7 +128,6 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         dateFormatter = new XAxisDateFormatter();
 
 
-
         // chartListViewModel.getChartByTitle(chartListViewModel.getCurrentChartTitle()).observe(this, this::onChartLoaded);
         onChartLoaded(chartListViewModel.getCurrentChartEntity());
     }
@@ -147,9 +140,8 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         mAdapter.setTheme(chart.getColorScheme());
         chartListViewModel.getEntriesByChart(chart.getTitle()).observe(this, this::onEntriesUpdated);
         intervalSpinner.setOnItemSelectedListener(this);
-
-        titleTextView.setTextColor(ChartStyle.getColorResourceByName("@*highlight_color", getActivity(), chartEntity.getColorScheme()));
-
+        addEntryButton.setTextColor(ChartStyle.getColorResourceByName("@*background_gradient_start", getActivity(), chartEntity.getColorScheme()));
+        titleTextView.setTextColor(ChartStyle.getColorResourceByName("@*line_color", getActivity(), chartEntity.getColorScheme()));
 
 
     }
@@ -157,22 +149,38 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
 
     @Override
     public void onResume() {
-        ((FloatingActionButton)getActivity().findViewById(R.id.button)).hide();
+        ((FloatingActionButton) getActivity().findViewById(R.id.button)).hide();
         super.onResume();
     }
 
     @Override
     public void onPause() {
-        ((FloatingActionButton)getActivity().findViewById(R.id.button)).show();
+        ((FloatingActionButton) getActivity().findViewById(R.id.button)).show();
         super.onPause();
     }
 
 
     private void onEntriesUpdated(List<EntryEntity> entries) {
 
-        Collections.sort(entries, (lhs, rhs) -> lhs.getTimestamp() > rhs.getTimestamp() ? 1 : (lhs.getTimestamp() < rhs.getTimestamp()) ? 1 : 0);
+        if (entries.size() < minimumEntriesLength) {
+            for (int i = entries.size(); i < minimumEntriesLength; i++) {
+                EntryEntity ee = new EntryEntity("", 0, this.chartEntity.getTitle());
+                ee.setTimestamp(-1L);
+                entries.add(ee);
+            }
 
-        for(int i=0;i<entries.size();i++)
+
+        }
+
+        Collections.sort(entries, (lhs, rhs) -> {
+            if (lhs.getTimestamp().equals(rhs.getTimestamp()))
+                return 0;
+            else
+                return lhs.getTimestamp() > rhs.getTimestamp() ? 1 : -1;
+        });
+
+
+        for (int i = 0; i < entries.size(); i++)
             entries.get(i).setIndex(i);
 
         chartEntity.setEntries(entries);
@@ -180,8 +188,6 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         mAdapter.setEntries(entries);
 
     }
-
-
 
 
     private void redrawChartView() {
@@ -221,15 +227,18 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
     }
 
 
-
-
-
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         lineChart.fitScreen();
+        ((TextView) parent.getChildAt(0)).setTextColor(        ChartStyle.getColorResourceByName("@*background_gradient_start", getContext(), chartEntity.getColorScheme()));
+
+
         switch (position) {
             case 0:
-                visibleItems = lineChart.getLineData().getDataSets().get(0).getEntryCount();
+                if (lineChart.getLineData() != null)
+                    visibleItems = lineChart.getLineData().getDataSets().get(0).getEntryCount();
+                else
+                    visibleItems = 7;
                 break;
             case 1:
                 visibleItems = 7;
@@ -261,13 +270,13 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
             chartListViewModel.setCurrentEntry(null);
             chartListViewModel.setAction("");
 
-            String FRAGMENT_NAME ="EntryDetailFragment";
-            Fragment entryDetailFragment =  new EntryDetailFragment();
+            String FRAGMENT_NAME = "FragmentEntryDetail";
+            Fragment entryDetailFragment = new FragmentEntryDetail();
             FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.setCustomAnimations(R.anim.fadein,
                     R.anim.fadeout, R.anim.fadein, R.anim.fadeout);
-            fragmentTransaction.add(R.id.outer_layout, entryDetailFragment,FRAGMENT_NAME);
+            fragmentTransaction.add(R.id.outer_layout, entryDetailFragment, FRAGMENT_NAME);
             fragmentTransaction.addToBackStack(FRAGMENT_NAME);
             fragmentTransaction.commit();
         }
@@ -310,7 +319,8 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
     }
 
     @Override
-    public void onNothingSelected() {}
+    public void onNothingSelected() {
+    }
 
 
     @Override
@@ -327,13 +337,13 @@ public class ChartDetailFragment extends LifecycleFragment implements AdapterVie
         chartListViewModel.setCurrentEntry(entryEntity);
         chartListViewModel.setAction(Const.UPDATE_ENTRY_ACTION);
 
-        String FRAGMENT_NAME ="EntryDetailFragment";
-        Fragment entryDetailFragment =  new EntryDetailFragment();
+        String FRAGMENT_NAME = "FragmentEntryDetail";
+        Fragment entryDetailFragment = new FragmentEntryDetail();
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.setCustomAnimations(R.anim.fadein,
                 R.anim.fadeout, R.anim.fadein, R.anim.fadeout);
-        fragmentTransaction.add(R.id.outer_layout, entryDetailFragment,FRAGMENT_NAME);
+        fragmentTransaction.add(R.id.outer_layout, entryDetailFragment, FRAGMENT_NAME);
         fragmentTransaction.addToBackStack(FRAGMENT_NAME);
         fragmentTransaction.commit();
     }
